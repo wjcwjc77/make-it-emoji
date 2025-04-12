@@ -20,105 +20,177 @@ export async function POST(req) {
     uniqueAvailableEmojisCount: uniqueAvailableEmojis.length 
   });
 
-  const prompt = `你是一个善于发现创意、充满鼓励的Emoji成语专家。你的主要任务是欣赏和发现玩家在Emoji组合中的独特见解，并提供你自己的完整答案。
-
-任务：评价玩家的表达，并给出你认为最合适的Emoji组合。
+  try {
+    // 第一步：获取大模型对这个成语的理想emoji表达
+    console.log("Step 1: Getting ideal emoji expression...");
+    const idealExpressionPrompt = `你是一个精通中文成语和Emoji表达的专家。请为以下成语提供最佳的Emoji表达方式。
 
 成语：「${phrase}」
-玩家的Emoji组合：${emojis.join(" ")}
 可用的Emoji池：${uniqueAvailableEmojis.join(" ")}
 
 请完成以下任务：
-
-1. 仔细欣赏玩家的表达，从以下角度为玩家打分（0~100分）：
-   - 创意性：是否有独特的表达方式
-   - 巧妙度：是否巧妙运用了emoji的多重含义
-   - 表达力：是否让人一眼就能理解
-   记住：只要玩家的表达有任何亮点，就应该给予鼓励性的高分。
-
-2. 给出你的完整答案：
-   - 【重要】必须严格从以上【可用的Emoji池】列表中选择3-5个emoji组成最佳组合
-   - 不要使用池中没有的emoji，否则答案将被拒绝
-   - 这个组合应该完整地表达成语的含义
-   - 可以采用不同于玩家的新思路
-   - 如果玩家的组合已经很完美，可以采用相同的组合
-
-3. 欣赏点评：
-   - 先表扬玩家表达中的亮点
-   - 解释你的答案是如何表达成语含义的
-   - 鼓励玩家继续创作
+1. 从提供的Emoji池中选择3-5个最能表达该成语含义的emoji组合
+2. 提供简短解释，说明这些emoji如何表达成语的含义
 
 请严格按照以下格式返回：
-分数：XX
 答案：emoji1 emoji2 emoji3（必须从可用的Emoji池中选择，不要创造新emoji）
-点评：玩家创意点评 + AI答案解释`;
-  console.log("Generated prompt:", prompt);
+解释：解释这些emoji如何表达成语的含义`;
 
-  try {
-    console.log("Calling OpenAI API...");
-    const response = await openai.chat.completions.create({
+    const idealExpressionResponse = await openai.chat.completions.create({
       model: 'qwen-turbo',
-      messages: [{ role: 'user', content: prompt }],
-    });
-    console.log("OpenAI API Response:", JSON.stringify(response, null, 2));
-    const content = response.choices[0].message.content.trim();
-    console.log("Raw model response:", content);
-    
-    // 使用更稳健的方法提取信息
-    const scoreMatch = content.match(/分数[:：]\s*(\d+)/);
-    const score = scoreMatch ? parseInt(scoreMatch[1], 10) : 85;
-    
-    // 提取回答部分
-    const answerMatch = content.match(/答案[:：]\s*([^\n]+)/);
-    let suggestedEmojis = answerMatch ? answerMatch[1].trim() : '';
-    
-    // 提取点评部分 - 使用正则表达式匹配"点评："之后的所有内容
-    const comparisonMatch = content.match(/点评[:：]\s*([\s\S]+)$/);
-    let comparison = comparisonMatch ? comparisonMatch[1].trim() : '';
-    
-    console.log("Extracted fields:", {
-      score,
-      suggestedEmojis,
-      comparison: comparison.substring(0, 100) + (comparison.length > 100 ? '...' : '')
+      messages: [{ role: 'user', content: idealExpressionPrompt }],
     });
     
-    // 验证和过滤emoji，确保只使用可用的emoji
-    const validEmojis = suggestedEmojis.split(/\s+/).filter(emoji => 
+    const idealExpressionContent = idealExpressionResponse.choices[0].message.content.trim();
+    console.log("Ideal expression response:", idealExpressionContent);
+    
+    // 提取理想emoji组合和解释
+    const idealAnswerMatch = idealExpressionContent.match(/答案[:：]\s*([^\n]+)/);
+    let idealEmojis = idealAnswerMatch ? idealAnswerMatch[1].trim() : '';
+    
+    const explanationMatch = idealExpressionContent.match(/解释[:：]\s*([\s\S]+)$/);
+    let explanation = explanationMatch ? explanationMatch[1].trim() : '';
+    
+    // 验证理想emoji，确保只使用可用的emoji
+    const validIdealEmojis = idealEmojis.split(/\s+/).filter(emoji => 
       uniqueAvailableEmojis.includes(emoji)
     );
     
-    // 如果没有有效的emoji建议或建议的emoji不在可用池中，使用玩家的组合
-    if (!validEmojis.length) {
-      console.log("No valid emojis found in suggestion or emojis not in available pool, using player's combination");
-      suggestedEmojis = emojis.join(' ');
-    } else if (validEmojis.length < suggestedEmojis.split(/\s+/).length) {
-      // 部分有效，记录无效的emoji
-      const invalidEmojis = suggestedEmojis.split(/\s+/).filter(emoji => !uniqueAvailableEmojis.includes(emoji));
-      console.log("Some invalid emojis were filtered out:", invalidEmojis);
-      suggestedEmojis = validEmojis.join(' ');
-    } else {
-      suggestedEmojis = validEmojis.join(' ');
-    }
+    idealEmojis = validIdealEmojis.length ? validIdealEmojis.join(' ') : emojis.join(' ');
     
-    // 确保至少有一个emoji
-    if (!suggestedEmojis.trim()) {
-      console.log("Falling back to player's combination as suggested emojis are empty");
-      suggestedEmojis = emojis.join(' ');
-    }
+    // 第二步：对玩家的emoji组合进行评分
+    console.log("Step 2: Scoring player's emoji combination...");
+    const scoringPrompt = `你是一个善于发现创意、充满鼓励的Emoji成语评分专家。你的任务是评价玩家对成语的Emoji表达，重点是发掘玩家表达的独特性和创造力。
+
+成语：「${phrase}」
+玩家的Emoji组合：${emojis.join(" ")}
+理想的Emoji组合：${idealEmojis}
+理想组合的解释：${explanation}
+
+请从以下三个维度为玩家的Emoji组合打分（每项0~100分）：
+1. 创意性：是否有独特的表达方式
+2. 巧妙度：是否巧妙运用了emoji的多重含义
+3. 表达力：是否让人一眼就能理解
+
+重要指导原则：
+- 请偏向给予玩家高分，特别是在创意性方面
+- 积极发掘玩家表达中的亮点，不管多小
+- 点评中只夸奖玩家，不要与"理想答案"进行对比
+- 让玩家感觉自己的表达非常有创意、独特
+- 表达真诚的赞美，不要用勉强的语气
+- 避免使用"但是"、"然而"等转折词
+- 即使玩家的表达与常规理解不同，也要赞美其独特视角
+
+请严格按照以下格式返回：
+创意性分数：XX
+巧妙度分数：XX
+表达力分数：XX
+点评：只夸奖玩家的emoji组合，突出其独特性和创意，不要与理想答案对比或提出改进建议`;
+
+    const scoringResponse = await openai.chat.completions.create({
+      model: 'qwen-turbo',
+      messages: [{ role: 'user', content: scoringPrompt }],
+    });
     
-    // 处理评价部分，确保不为空
+    const scoringContent = scoringResponse.choices[0].message.content.trim();
+    console.log("Scoring response:", scoringContent);
+    
+    // 提取各维度分数
+    const creativityMatch = scoringContent.match(/创意性分数[:：]\s*(\d+)/);
+    const clevernessMatch = scoringContent.match(/巧妙度分数[:：]\s*(\d+)/);
+    const expressivenessMatch = scoringContent.match(/表达力分数[:：]\s*(\d+)/);
+    
+    // 确保创意性分数偏高，至少75分起步
+    const creativityScore = creativityMatch ? Math.max(75, parseInt(creativityMatch[1], 10)) : 85;
+    const clevernessScore = clevernessMatch ? parseInt(clevernessMatch[1], 10) : 85;
+    const expressivenessScore = expressivenessMatch ? parseInt(expressivenessMatch[1], 10) : 85;
+    
+    // 为分数添加随机波动，但确保创意性分数始终较高
+    const addRandomVariation = (score, isCreativity = false) => {
+      // 创意性分数的随机波动偏向正向
+      const variation = isCreativity 
+        ? Math.floor(Math.random() * 8) // 0-7的正向波动
+        : Math.floor(Math.random() * 11) - 5; // -5到5的普通波动
+      // 应用随机波动并确保分数在0-100范围内
+      return Math.max(0, Math.min(100, score + variation));
+    };
+    
+    // 为每个维度分数添加随机波动
+    const finalCreativityScore = addRandomVariation(creativityScore, true);
+    const finalClevernessScore = addRandomVariation(clevernessScore);
+    const finalExpressivenessScore = addRandomVariation(expressivenessScore);
+    
+    // 计算平均分，但略微提高权重使分数更好看
+    const score = Math.round((finalCreativityScore * 1.2 + finalClevernessScore + finalExpressivenessScore) / 3.2);
+    
+    // 提取点评
+    const comparisonMatch = scoringContent.match(/点评[:：]\s*([\s\S]+)$/);
+    let comparison = comparisonMatch ? comparisonMatch[1].trim() : '';
+    
+    // 如果没有点评，生成默认点评
     if (!comparison) {
       console.log("No comparison found, generating default feedback");
-      comparison = `你的表情组合很有创意！${phrase}这个成语通过${suggestedEmojis}也能很好地表达。继续保持这种创造力！`;
+      comparison = `太有创意了！你对「${phrase}」的emoji表达非常独特，展现了与众不同的思维方式。你选择的组合不仅形象生动，而且巧妙地捕捉到了成语的精髓。你的表达方式让人眼前一亮，真的很有想象力！`;
     }
     
-    console.log("Parsed score:", score);
-    console.log("Suggested emojis:", suggestedEmojis);
+    // 检查点评是否包含对比或建议，可能需要过滤
+    const negativePatterns = [
+      /但是/g, /然而/g, /不过/g, /可惜/g, /遗憾/g, /不足/g, /改进/g, /建议/g, 
+      /可以更/g, /不如/g, /比较/g, /相比/g, /理想/g, /标准/g
+    ];
+    
+    let hasNegativePattern = false;
+    negativePatterns.forEach(pattern => {
+      if (pattern.test(comparison)) {
+        hasNegativePattern = true;
+        comparison = comparison.replace(pattern, "，");
+      }
+    });
+    
+    if (hasNegativePattern) {
+      console.log("Detected potentially negative comparison patterns, cleaned up text");
+    }
+    
+    // 检查并清理点评中的emoji，确保只使用可用的emoji
+    const emojiRegex = /(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)/gu;
+    const emojisInComparison = comparison.match(emojiRegex) || [];
+    
+    // 找出点评中不在可用emoji池中的emoji
+    const invalidEmojisInComparison = emojisInComparison.filter(emoji => 
+      !uniqueAvailableEmojis.includes(emoji) && !emojis.includes(emoji)
+    );
+    
+    if (invalidEmojisInComparison.length > 0) {
+      console.log("Found invalid emojis in comparison text:", invalidEmojisInComparison);
+      
+      // 替换掉点评中的无效emoji，用文字描述替代
+      invalidEmojisInComparison.forEach(invalidEmoji => {
+        comparison = comparison.replace(
+          new RegExp(invalidEmoji, 'g'), 
+          `"${invalidEmoji}"`
+        );
+      });
+      
+      console.log("Cleaned comparison text to remove invalid emojis");
+    }
+    
+    console.log("Dimension scores:", {
+      creativity: finalCreativityScore,
+      cleverness: finalClevernessScore,
+      expressiveness: finalExpressivenessScore
+    });
+    console.log("Average score:", score);
+    console.log("Ideal emojis:", idealEmojis);
     console.log("Comparison:", comparison);
 
     return NextResponse.json({ 
       score,
-      suggestedEmojis,
+      dimensionScores: {
+        creativity: finalCreativityScore,
+        cleverness: finalClevernessScore,
+        expressiveness: finalExpressivenessScore
+      },
+      suggestedEmojis: idealEmojis,
       comparison
     });
   } catch (error) {
