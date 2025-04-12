@@ -188,13 +188,13 @@ export default function ResultPage() {
   // 分享功能
   const handleShare = () => {
     const scoreInfo = getScoreLevel(score);
-    const shareText = `我在Emoji大师中表达"${phrase}"，获得了${score}分！\n成功晋级【${scoreInfo.level}】🎉\n我的表达：${emojis.join(" ")}\nAI的表达：${suggestedEmojis}\n\n有本事你也来挑战一下？👉 #Emoji大师 #成语挑战`;
+    const shareText = `我在emoji-master中表达"${phrase}"，获得了${score}分！\n成功晋级【${scoreInfo.level}】🎉\n我的表达：${emojis.join(" ")}\nAI的表达：${suggestedEmojis}\n\n有本事你也来挑战一下？👉 #emoji-master #成语挑战`;
     
     setShowShareTip(false);
     
     if (navigator.share) {
       navigator.share({
-        title: '🎮 Emoji大师挑战结果',
+        title: '🎮 emoji-master挑战结果',
         text: shareText,
       }).catch(console.error);
     } else {
@@ -452,8 +452,8 @@ export default function ResultPage() {
                   )}
                   
                   <div style={{ marginTop: "1rem", fontSize: "0.75rem", color: "#888888", borderTop: "1px solid #eee", paddingTop: "0.5rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <img src="/favicon.ico" alt="Emoji大师" style={{ width: "16px", height: "16px", marginRight: "4px" }} />
-                    <span>Emoji大师 - emoji-master.com</span>
+                    <img src="/favicon.ico" alt="emoji-master" style={{ width: "16px", height: "16px", marginRight: "4px" }} />
+                    <span>emoji-master - emoji-master.com</span>
                   </div>
                 </div>
               </div>

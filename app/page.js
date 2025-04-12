@@ -5,7 +5,7 @@ export default function Home() {
     <section className="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center px-4 py-16 gradient-bg">
       <div className="card max-w-4xl w-full p-8 text-center fade-in">
         <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
-          Emoji 大师
+          emoji-master
         </h1>
         
         <p className="text-xl mb-8 text-gray-700 dark:text-gray-300">
