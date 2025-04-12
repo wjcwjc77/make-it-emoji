@@ -441,6 +441,29 @@ export default function ResultPage() {
                   <div style={{ fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.5rem", color: "#000000", wordBreak: "break-all" }}>{phrase}</div>
                   <div style={{ fontSize: "1.875rem", marginBottom: "0.5rem" }}>{emojis.join(" ")}</div>
                   <div style={{ fontSize: "1.25rem", fontWeight: "bold", marginBottom: "0.5rem", color: "#E74C3C" }}>🔥 得分：{score} 分</div>
+                  
+                  {/* 添加等级称号 */}
+                  <div 
+                    style={{ 
+                      fontSize: "1rem", 
+                      fontWeight: "bold", 
+                      marginBottom: "0.5rem", 
+                      background: scoreInfo.color.replace('bg-', ''), 
+                      WebkitBackgroundClip: "text", 
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text",
+                      padding: "4px",
+                      display: "inline-block"
+                    }}
+                  >
+                    <span style={{ fontSize: "1.25rem" }}>
+                      {Array.from(scoreInfo.level.matchAll(/[\p{Emoji}\u200D]+/gu)).map(match => match[0]).join('')}
+                    </span>
+                    <span>
+                      {scoreInfo.level.replace(/[\p{Emoji}\u200D]+/gu, '')}
+                    </span>
+                  </div>
+                  
                   <div style={{ fontSize: "0.875rem", color: "#666666", fontStyle: "italic", marginBottom: "0.5rem", maxHeight: "80px", overflow: "hidden" }}>{comparison?.substring(0, 120)}{comparison?.length > 120 ? "..." : ""}</div>
                   
                   {qrCodeUrl && (

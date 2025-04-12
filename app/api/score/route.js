@@ -36,11 +36,47 @@ export async function POST(req) {
 答案：emoji1 emoji2 emoji3（必须从可用的Emoji池中选择，不要创造新emoji）
 解释：解释这些emoji如何表达成语的含义`;
 
-    const idealExpressionResponse = await openai.chat.completions.create({
-      model: 'qwen-turbo',
-      messages: [{ role: 'user', content: idealExpressionPrompt }],
-    });
+    // 第二步：独立评分prompt，不依赖理想答案
+    console.log("Step 2: Creating scoring prompt...");
+    const scoringPrompt = `你是一个善于发现创意、充满鼓励的Emoji成语评分专家。你的任务是评价玩家对成语的Emoji表达，重点是发掘玩家表达的独特性和创造力。
+
+成语：「${phrase}」
+玩家的Emoji组合：${emojis.join(" ")}
+
+请从以下三个维度为玩家的Emoji组合打分（每项0~100分）：
+1. 创意性：是否有独特的表达方式
+2. 巧妙度：是否巧妙运用了emoji的多重含义
+3. 表达力：是否让人一眼就能理解
+
+重要指导原则：
+- 请偏向给予玩家高分，特别是在创意性方面
+- 积极发掘玩家表达中的亮点，不管多小
+- 点评中只夸奖玩家，不做对比
+- 让玩家感觉自己的表达非常有创意、独特
+- 表达真诚的赞美，不要用勉强的语气
+- 避免使用"但是"、"然而"等转折词
+- 即使玩家的表达与常规理解不同，也要赞美其独特视角
+
+请严格按照以下格式返回：
+创意性分数：XX
+巧妙度分数：XX
+表达力分数：XX
+点评：只夸奖玩家的emoji组合，突出其独特性和创意`;
+
+    // 并发执行两个请求
+    console.log("Executing both requests concurrently...");
+    const [idealExpressionResponse, scoringResponse] = await Promise.all([
+      openai.chat.completions.create({
+        model: 'qwen-turbo',
+        messages: [{ role: 'user', content: idealExpressionPrompt }],
+      }),
+      openai.chat.completions.create({
+        model: 'qwen-turbo',
+        messages: [{ role: 'user', content: scoringPrompt }],
+      })
+    ]);
     
+    // 处理理想表达结果
     const idealExpressionContent = idealExpressionResponse.choices[0].message.content.trim();
     console.log("Ideal expression response:", idealExpressionContent);
     
@@ -58,40 +94,7 @@ export async function POST(req) {
     
     idealEmojis = validIdealEmojis.length ? validIdealEmojis.join(' ') : emojis.join(' ');
     
-    // 第二步：对玩家的emoji组合进行评分
-    console.log("Step 2: Scoring player's emoji combination...");
-    const scoringPrompt = `你是一个善于发现创意、充满鼓励的Emoji成语评分专家。你的任务是评价玩家对成语的Emoji表达，重点是发掘玩家表达的独特性和创造力。
-
-成语：「${phrase}」
-玩家的Emoji组合：${emojis.join(" ")}
-理想的Emoji组合：${idealEmojis}
-理想组合的解释：${explanation}
-
-请从以下三个维度为玩家的Emoji组合打分（每项0~100分）：
-1. 创意性：是否有独特的表达方式
-2. 巧妙度：是否巧妙运用了emoji的多重含义
-3. 表达力：是否让人一眼就能理解
-
-重要指导原则：
-- 请偏向给予玩家高分，特别是在创意性方面
-- 积极发掘玩家表达中的亮点，不管多小
-- 点评中只夸奖玩家，不要与"理想答案"进行对比
-- 让玩家感觉自己的表达非常有创意、独特
-- 表达真诚的赞美，不要用勉强的语气
-- 避免使用"但是"、"然而"等转折词
-- 即使玩家的表达与常规理解不同，也要赞美其独特视角
-
-请严格按照以下格式返回：
-创意性分数：XX
-巧妙度分数：XX
-表达力分数：XX
-点评：只夸奖玩家的emoji组合，突出其独特性和创意，不要与理想答案对比或提出改进建议`;
-
-    const scoringResponse = await openai.chat.completions.create({
-      model: 'qwen-turbo',
-      messages: [{ role: 'user', content: scoringPrompt }],
-    });
-    
+    // 处理评分结果
     const scoringContent = scoringResponse.choices[0].message.content.trim();
     console.log("Scoring response:", scoringContent);
     
