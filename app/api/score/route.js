@@ -28,7 +28,8 @@ export async function POST(req) {
    记住：只要玩家的表达有任何亮点，就应该给予鼓励性的高分。
 
 2. 给出你的完整答案：
-   - 从【可用的Emoji池】中选择3-5个emoji组成最佳组合
+   - 【重要】必须严格从以上【可用的Emoji池】列表中选择3-5个emoji组成最佳组合
+   - 不要使用池中没有的emoji，否则答案将被拒绝
    - 这个组合应该完整地表达成语的含义
    - 可以采用不同于玩家的新思路
    - 如果玩家的组合已经很完美，可以采用相同的组合
@@ -40,7 +41,7 @@ export async function POST(req) {
 
 请严格按照以下格式返回：
 分数：XX
-答案：emoji1 emoji2 emoji3（必须从可用的Emoji池中选择）
+答案：emoji1 emoji2 emoji3（必须从可用的Emoji池中选择，不要创造新emoji）
 点评：玩家创意点评 + AI答案解释`;
   console.log("Generated prompt:", prompt);
 
@@ -52,13 +53,27 @@ export async function POST(req) {
     });
     console.log("OpenAI API Response:", JSON.stringify(response, null, 2));
     const content = response.choices[0].message.content.trim();
+    console.log("Raw model response:", content);
     
-    // Parse score, suggested emojis, and comparison
-    const lines = content.split('\n');
-    const score = parseInt(lines[0].replace(/[^0-9]/g, ''), 10);
+    // 使用更稳健的方法提取信息
+    const scoreMatch = content.match(/分数[:：]\s*(\d+)/);
+    const score = scoreMatch ? parseInt(scoreMatch[1], 10) : 85;
+    
+    // 提取回答部分
+    const answerMatch = content.match(/答案[:：]\s*([^\n]+)/);
+    let suggestedEmojis = answerMatch ? answerMatch[1].trim() : '';
+    
+    // 提取点评部分 - 使用正则表达式匹配"点评："之后的所有内容
+    const comparisonMatch = content.match(/点评[:：]\s*([\s\S]+)$/);
+    let comparison = comparisonMatch ? comparisonMatch[1].trim() : '';
+    
+    console.log("Extracted fields:", {
+      score,
+      suggestedEmojis,
+      comparison: comparison.substring(0, 100) + (comparison.length > 100 ? '...' : '')
+    });
     
     // 验证和过滤emoji，确保只使用可用的emoji
-    let suggestedEmojis = lines[1]?.replace('答案：', '').trim() || '';
     const validEmojis = suggestedEmojis.split(/\s+/).filter(emoji => 
       availableEmojis.includes(emoji)
     );
@@ -67,11 +82,26 @@ export async function POST(req) {
     if (!validEmojis.length) {
       console.log("No valid emojis found in suggestion or emojis not in available pool, using player's combination");
       suggestedEmojis = emojis.join(' ');
+    } else if (validEmojis.length < suggestedEmojis.split(/\s+/).length) {
+      // 部分有效，记录无效的emoji
+      const invalidEmojis = suggestedEmojis.split(/\s+/).filter(emoji => !availableEmojis.includes(emoji));
+      console.log("Some invalid emojis were filtered out:", invalidEmojis);
+      suggestedEmojis = validEmojis.join(' ');
     } else {
       suggestedEmojis = validEmojis.join(' ');
     }
     
-    const comparison = lines[2]?.replace('点评：', '').trim() || '';
+    // 确保至少有一个emoji
+    if (!suggestedEmojis.trim()) {
+      console.log("Falling back to player's combination as suggested emojis are empty");
+      suggestedEmojis = emojis.join(' ');
+    }
+    
+    // 处理评价部分，确保不为空
+    if (!comparison) {
+      console.log("No comparison found, generating default feedback");
+      comparison = `你的表情组合很有创意！${phrase}这个成语通过${suggestedEmojis}也能很好地表达。继续保持这种创造力！`;
+    }
     
     console.log("Parsed score:", score);
     console.log("Suggested emojis:", suggestedEmojis);
