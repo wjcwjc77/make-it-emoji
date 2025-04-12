@@ -1,4 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
+import Link from "next/link";
+import Image from "next/image";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -31,17 +33,17 @@ export default function RootLayout({ children }) {
       >
         <header className="fixed top-0 left-0 w-full bg-white/80 dark:bg-black/80 backdrop-blur-md z-10 shadow-sm">
           <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-            <a href="/" className="text-2xl font-bold flex items-center gap-2">
-              <img src="/favicon.ico" alt="emoji-master" className="w-8 h-8" />
+            <Link href="/" className="text-2xl font-bold flex items-center gap-2">
+              <Image src="/favicon.ico" alt="emoji-master" width={32} height={32} className="w-8 h-8" />
               <span>emoji-master</span>
-            </a>
+            </Link>
             <nav>
               <ul className="flex gap-4">
                 <li>
-                  <a href="/" className="hover:text-primary transition-colors">首页</a>
+                  <Link href="/" className="hover:text-primary transition-colors">首页</Link>
                 </li>
                 <li>
-                  <a href="/game" className="hover:text-primary transition-colors">挑战</a>
+                  <Link href="/game" className="hover:text-primary transition-colors">挑战</Link>
                 </li>
               </ul>
             </nav>

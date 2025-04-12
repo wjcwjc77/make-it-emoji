@@ -48,8 +48,31 @@ export default function GamePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showConfetti, setShowConfetti] = useState(false);
   const [friendScore, setFriendScore] = useState(null);
+  const [columnCount, setColumnCount] = useState(4); // 默认为移动设备的4列
   
   const searchParams = useSearchParams();
+
+  // 检测窗口大小变化并更新列数
+  useEffect(() => {
+    function handleResize() {
+      if (window.innerWidth >= 768) {
+        setColumnCount(8); // md屏幕
+      } else if (window.innerWidth >= 640) {
+        setColumnCount(6); // sm屏幕
+      } else {
+        setColumnCount(4); // 小屏幕
+      }
+    }
+    
+    // 初始化时运行一次
+    handleResize();
+    
+    // 添加窗口调整大小事件监听器
+    window.addEventListener('resize', handleResize);
+    
+    // 清理函数
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const loadGame = () => {
@@ -84,7 +107,10 @@ export default function GamePage() {
       // 随机排序最终的emoji列表，增加每次游戏的新鲜感
       const shuffledEmojis = [...finalEmojis].sort(() => Math.random() - 0.5);
       
-      setEmojis(shuffledEmojis);
+      // 调整emoji列表长度为网格列数的倍数，保证布局整齐
+      const adjustedEmojis = adjustEmojiCount(shuffledEmojis, columnCount);
+      
+      setEmojis(adjustedEmojis);
       
       // 保存原始的uniqueEmojis用于传递给评分API
       localStorage.setItem("originalEmojiPool", JSON.stringify(uniqueEmojis));
@@ -94,7 +120,33 @@ export default function GamePage() {
     
     // 添加短暂延迟以显示加载效果
     setTimeout(loadGame, 800);
-  }, [searchParams]);
+  }, [searchParams, columnCount]);
+
+  // 调整emoji数量为网格列数的倍数，确保布局整齐
+  const adjustEmojiCount = (emojis, cols) => {
+    // 计算需要的emoji数量，向上取整为列数的倍数
+    const currentLength = emojis.length;
+    const targetLength = Math.ceil(currentLength / cols) * cols;
+    
+    // 如果当前数量已经是列数的倍数，直接返回
+    if (currentLength % cols === 0) {
+      return emojis;
+    }
+    
+    // 填充额外的emoji到目标长度
+    const extraNeeded = targetLength - currentLength;
+    
+    // 获取一些额外的emoji来填充
+    const extraEmojis = getRandomEmojis(emojis, extraNeeded);
+    
+    // 如果获取的额外emoji不足，使用一些通用emoji作为备选
+    if (extraEmojis.length < extraNeeded) {
+      const backupEmojis = COMMON_EMOJIS.slice(0, extraNeeded - extraEmojis.length);
+      return [...emojis, ...extraEmojis, ...backupEmojis];
+    }
+    
+    return [...emojis, ...extraEmojis];
+  };
 
   const handleSelect = (emoji) => {
     if (selected.length < 5) {

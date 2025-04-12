@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -27,11 +28,11 @@ export default function Home() {
           </div>
         </div>
 
-        <a href="/game">
+        <Link href="/game">
           <button className="px-8 py-3 bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white rounded-full font-medium text-lg pulse shadow-lg hover:shadow-xl">
             开始挑战
           </button>
-        </a>
+        </Link>
       </div>
       
       <div className="mt-12 flex gap-4 text-white">
