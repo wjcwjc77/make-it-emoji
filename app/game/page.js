@@ -1,6 +1,6 @@
 "use client";
 import emojiData from "../../data/chengyu_emoji.json";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Confetti } from "../components/Confetti";
 
@@ -41,7 +41,8 @@ function getRandomEmojis(existingEmojis, count = 5) {
   return randomEmojis;
 }
 
-export default function GamePage() {
+// 游戏内容组件，使用 useSearchParams
+function GameContent() {
   const [phrase, setPhrase] = useState("");
   const [emojis, setEmojis] = useState([]);
   const [selected, setSelected] = useState([]);
@@ -297,5 +298,21 @@ export default function GamePage() {
         }
       `}</style>
     </div>
+  );
+}
+
+// 主游戏页面组件，使用 Suspense 包裹游戏内容
+export default function GamePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
+        <div className="text-center fade-in">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
+          <h2 className="text-xl">游戏加载中...</h2>
+        </div>
+      </div>
+    }>
+      <GameContent />
+    </Suspense>
   );
 }
