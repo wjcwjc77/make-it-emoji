@@ -4,6 +4,43 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Confetti } from "../components/Confetti";
 
+// 通用emoji池，用于随机添加额外选项
+const COMMON_EMOJIS = [
+  "😀", "😂", "🤣", "😊", "🥰", "😎", "🤔", "🤯", "😱", "😴", 
+  "👍", "👎", "👋", "✌️", "🤞", "👀", "👑", "💰", "💯", "💪",
+  "❤️", "🔥", "💧", "⭐", "🌈", "🍀", "🎮", "🎯", "🎪", "🎭",
+  "🚀", "⚡", "💡", "🔑", "🎁", "🏆", "🎵", "🎬", "📱", "⏰"
+];
+
+// 去除数组中的重复元素
+function removeDuplicates(array) {
+  return [...new Set(array)];
+}
+
+// 从通用emoji池中随机选择n个，确保不与现有emoji重复
+function getRandomEmojis(existingEmojis, count = 5) {
+  // 创建一个不包含现有emoji的候选池
+  const candidatePool = COMMON_EMOJIS.filter(emoji => !existingEmojis.includes(emoji));
+  
+  // 如果候选池太小，直接返回全部候选
+  if (candidatePool.length <= count) {
+    return candidatePool;
+  }
+  
+  // 随机选择count个emoji
+  const randomEmojis = [];
+  const poolCopy = [...candidatePool];
+  
+  for (let i = 0; i < count; i++) {
+    if (poolCopy.length === 0) break;
+    const randomIndex = Math.floor(Math.random() * poolCopy.length);
+    randomEmojis.push(poolCopy[randomIndex]);
+    poolCopy.splice(randomIndex, 1);
+  }
+  
+  return randomEmojis;
+}
+
 export default function GamePage() {
   const [phrase, setPhrase] = useState("");
   const [emojis, setEmojis] = useState([]);
@@ -20,19 +57,37 @@ export default function GamePage() {
       const sharedPhrase = searchParams.get("phrase");
       const score = searchParams.get("score");
       
+      let selectedPhrase;
       if (sharedPhrase && emojiData[sharedPhrase]) {
-        setPhrase(sharedPhrase);
-        setEmojis(emojiData[sharedPhrase]);
+        selectedPhrase = sharedPhrase;
         if (score) {
           setFriendScore(score);
         }
       } else {
         // 随机选择成语
         const phrases = Object.keys(emojiData);
-        const randomPhrase = phrases[Math.floor(Math.random() * phrases.length)];
-        setPhrase(randomPhrase);
-        setEmojis(emojiData[randomPhrase]);
+        selectedPhrase = phrases[Math.floor(Math.random() * phrases.length)];
       }
+      
+      setPhrase(selectedPhrase);
+      
+      // 去重处理emoji池
+      const uniqueEmojis = removeDuplicates(emojiData[selectedPhrase]);
+      
+      // 添加3-5个随机emoji增加随机性
+      const randomCount = Math.floor(Math.random() * 3) + 3; // 随机3-5个
+      const randomEmojis = getRandomEmojis(uniqueEmojis, randomCount);
+      
+      // 合并并再次去重
+      const finalEmojis = removeDuplicates([...uniqueEmojis, ...randomEmojis]);
+      
+      // 随机排序最终的emoji列表，增加每次游戏的新鲜感
+      const shuffledEmojis = [...finalEmojis].sort(() => Math.random() - 0.5);
+      
+      setEmojis(shuffledEmojis);
+      
+      // 保存原始的uniqueEmojis用于传递给评分API
+      localStorage.setItem("originalEmojiPool", JSON.stringify(uniqueEmojis));
       
       setIsLoading(false);
     };
@@ -75,7 +130,12 @@ export default function GamePage() {
   const handleSubmit = () => {
     localStorage.setItem("phrase", phrase);
     localStorage.setItem("emojis", JSON.stringify(selected));
-    localStorage.setItem("availableEmojis", JSON.stringify(emojis));
+    
+    // 使用原始的emoji池加上选择的随机emoji
+    const originalPool = JSON.parse(localStorage.getItem("originalEmojiPool") || "[]");
+    const availableEmojis = removeDuplicates([...originalPool, ...selected]);
+    localStorage.setItem("availableEmojis", JSON.stringify(availableEmojis));
+    
     window.location.href = "/result";
   };
 

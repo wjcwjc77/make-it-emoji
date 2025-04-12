@@ -24,8 +24,27 @@ export default function ResultPage() {
   const [showLevelTitle, setShowLevelTitle] = useState(false);
   const [shareURL, setShareURL] = useState("");
   const [qrCodeUrl, setQrCodeUrl] = useState("");
+  const [clientIP, setClientIP] = useState("");
   const cardRef = useRef(null);
 
+  // 获取客户端IP
+  useEffect(() => {
+    async function fetchClientIP() {
+      try {
+        const res = await fetch('/api/ip');
+        const data = await res.json();
+        setClientIP(data.ip);
+        console.log('客户端IP已获取:', data.ip);
+      } catch (error) {
+        console.error('获取IP失败:', error);
+        setClientIP('fetch-failed');
+      }
+    }
+    
+    fetchClientIP();
+  }, []);
+
+  // 主效应 - 加载数据和评分
   useEffect(() => {
     // 思考动画计时器
     let thinkingInterval;
@@ -42,6 +61,14 @@ export default function ResultPage() {
 
     setPhrase(storedPhrase);
     setEmojis(storedEmojis);
+
+    // 如果clientIP为空，等待下次触发（当clientIP设置后）
+    if (!clientIP) {
+      console.log("等待IP加载完成...");
+      return () => {
+        if (thinkingInterval) clearInterval(thinkingInterval);
+      };
+    }
 
     async function fetchScore() {
       try {
@@ -77,6 +104,7 @@ export default function ResultPage() {
             model_score: data.score,
             model_suggestion: data.suggestedEmojis,
             model_feedback: modelFeedback,
+            player_ip: clientIP,
             created_at: new Date().toISOString()
           });
           
@@ -89,6 +117,7 @@ export default function ResultPage() {
               model_score: data.score,
               model_suggestion: data.suggestedEmojis,
               model_feedback: modelFeedback,
+              player_ip: clientIP,
               created_at: new Date().toISOString(),
             })
           });
@@ -138,7 +167,7 @@ export default function ResultPage() {
     return () => {
       if (thinkingInterval) clearInterval(thinkingInterval);
     };
-  }, []);
+  }, [clientIP]);
 
   // 根据分数获取评分等级和颜色
   const getScoreLevel = (score) => {
@@ -310,7 +339,7 @@ export default function ResultPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="card p-6 fade-in border-t-4 border-rose-500 shadow-md h-[200px]">
             <h2 className="text-xl font-medium mb-4 flex items-center gap-2">
-              <span className="w-8 h-8 flex items-center justify-center bg-rose-500/10 rounded-full text-rose-500">👤</span>
+              <span className="w-8 h-8 flex items-center justify-center bg-rose-500/10 rounded-full text-rose-500">😊</span>
               你的表达：
             </h2>
             <div className="text-4xl mb-4 flex flex-wrap justify-center gap-2 p-4 bg-gradient-to-r from-rose-50 to-amber-50 dark:from-rose-900/10 dark:to-amber-900/10 rounded-lg h-[96px] overflow-hidden">
@@ -422,7 +451,10 @@ export default function ResultPage() {
                     </div>
                   )}
                   
-                  <div style={{ marginTop: "1rem", fontSize: "0.75rem", color: "#888888", borderTop: "1px solid #eee", paddingTop: "0.5rem" }}>Emoji大师 - emoji-master.com</div>
+                  <div style={{ marginTop: "1rem", fontSize: "0.75rem", color: "#888888", borderTop: "1px solid #eee", paddingTop: "0.5rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <img src="/favicon.ico" alt="Emoji大师" style={{ width: "16px", height: "16px", marginRight: "4px" }} />
+                    <span>Emoji大师 - emoji-master.com</span>
+                  </div>
                 </div>
               </div>
             </div>

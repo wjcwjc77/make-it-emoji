@@ -32,7 +32,7 @@ export default function RootLayout({ children }) {
         <header className="fixed top-0 left-0 w-full bg-white/80 dark:bg-black/80 backdrop-blur-md z-10 shadow-sm">
           <div className="container mx-auto px-4 py-3 flex justify-between items-center">
             <a href="/" className="text-2xl font-bold flex items-center gap-2">
-              <span className="text-3xl">🎮</span>
+              <img src="/favicon.ico" alt="Emoji 大师" className="w-8 h-8" />
               <span>Emoji 大师</span>
             </a>
             <nav>

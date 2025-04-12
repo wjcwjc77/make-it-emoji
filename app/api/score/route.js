@@ -9,7 +9,16 @@ const openai = new OpenAI({
 export async function POST(req) {
   console.log("API route called");
   const { phrase, emojis, availableEmojis } = await req.json();
-  console.log("Received request:", { phrase, emojis, availableEmojis });
+  
+  // 去重处理emoji池
+  const uniqueAvailableEmojis = [...new Set(availableEmojis)];
+  
+  console.log("Received request:", { 
+    phrase, 
+    emojis, 
+    availableEmojisCount: availableEmojis.length,
+    uniqueAvailableEmojisCount: uniqueAvailableEmojis.length 
+  });
 
   const prompt = `你是一个善于发现创意、充满鼓励的Emoji成语专家。你的主要任务是欣赏和发现玩家在Emoji组合中的独特见解，并提供你自己的完整答案。
 
@@ -17,7 +26,7 @@ export async function POST(req) {
 
 成语：「${phrase}」
 玩家的Emoji组合：${emojis.join(" ")}
-可用的Emoji池：${availableEmojis.join(" ")}
+可用的Emoji池：${uniqueAvailableEmojis.join(" ")}
 
 请完成以下任务：
 
@@ -75,7 +84,7 @@ export async function POST(req) {
     
     // 验证和过滤emoji，确保只使用可用的emoji
     const validEmojis = suggestedEmojis.split(/\s+/).filter(emoji => 
-      availableEmojis.includes(emoji)
+      uniqueAvailableEmojis.includes(emoji)
     );
     
     // 如果没有有效的emoji建议或建议的emoji不在可用池中，使用玩家的组合
@@ -84,7 +93,7 @@ export async function POST(req) {
       suggestedEmojis = emojis.join(' ');
     } else if (validEmojis.length < suggestedEmojis.split(/\s+/).length) {
       // 部分有效，记录无效的emoji
-      const invalidEmojis = suggestedEmojis.split(/\s+/).filter(emoji => !availableEmojis.includes(emoji));
+      const invalidEmojis = suggestedEmojis.split(/\s+/).filter(emoji => !uniqueAvailableEmojis.includes(emoji));
       console.log("Some invalid emojis were filtered out:", invalidEmojis);
       suggestedEmojis = validEmojis.join(' ');
     } else {
