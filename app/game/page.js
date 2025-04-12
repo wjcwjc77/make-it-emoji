@@ -9,7 +9,14 @@ const COMMON_EMOJIS = [
   "😀", "😂", "🤣", "😊", "🥰", "😎", "🤔", "🤯", "😱", "😴", 
   "👍", "👎", "👋", "✌️", "🤞", "👀", "👑", "💰", "💯", "💪",
   "❤️", "🔥", "💧", "⭐", "🌈", "🍀", "🎮", "🎯", "🎪", "🎭",
-  "🚀", "⚡", "💡", "🔑", "🎁", "🏆", "🎵", "🎬", "📱", "⏰"
+  "🚀", "⚡", "💡", "🔑", "🎁", "🏆", "🎵", "🎬", "📱", "⏰",
+  "🍎", "🍊", "🍋", "🍌", "🍉", "🍇", "🍓", "🫐", "🍒", "🥥",
+  "🌍", "🌎", "🌏", "🏔️", "🌋", "🏝️", "🏖️", "🌃", "🌄", "🌅",
+  "🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼", "🐨", "🐯",
+  "🦁", "🐮", "🐷", "🐸", "🐵", "🙈", "🙉", "🙊", "🐔", "🐧",
+  "🚗", "✈️", "🚢", "🚀", "🚁", "🚂", "🚒", "🚑", "🚕", "🛵",
+  "🎨", "🎭", "🎪", "🎤", "🎧", "🎸", "🎹", "🎬", "🎮", "🎯",
+  "🧩", "🎲", "🎷", "🎺", "🪗", "🎻", "🥁", "🎖️", "🏅", "🥇"
 ];
 
 // 去除数组中的重复元素
@@ -228,22 +235,6 @@ function GameContent() {
       </div>
 
       <div className="card p-6 mb-8">
-        <h3 className="text-xl font-semibold mb-4">选择表情：</h3>
-        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
-          {emojis.map((emoji, idx) => (
-            <button 
-              key={idx} 
-              className="text-4xl p-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all hover:scale-110 hover:shadow-md"
-              onClick={() => handleSelect(emoji)}
-              disabled={selected.length >= 5}
-            >
-              {emoji}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="card p-6 mb-8">
         <h3 className="text-xl font-semibold mb-4">你的选择：</h3>
         <div className="min-h-24 flex items-center justify-center">
           {selected.length > 0 ? (
@@ -253,7 +244,7 @@ function GameContent() {
               ))}
             </div>
           ) : (
-            <p className="text-gray-400 dark:text-gray-500">请从上方选择Emoji</p>
+            <p className="text-gray-400 dark:text-gray-500">请从下方选择Emoji</p>
           )}
         </div>
 
@@ -273,17 +264,31 @@ function GameContent() {
           >
             清空选择
           </button>
+          
+          <button 
+            className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            onClick={handleSubmit}
+            disabled={selected.length === 0}
+          >
+            提交答案
+          </button>
         </div>
       </div>
 
-      <div className="text-center">
-        <button 
-          className="px-8 py-3 bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white rounded-full font-medium text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          onClick={handleSubmit}
-          disabled={selected.length === 0}
-        >
-          提交答案
-        </button>
+      <div className="card p-6 mb-8">
+        <h3 className="text-xl font-semibold mb-4">选择表情：</h3>
+        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
+          {emojis.map((emoji, idx) => (
+            <button 
+              key={idx} 
+              className="text-4xl p-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all hover:scale-110 hover:shadow-md"
+              onClick={() => handleSelect(emoji)}
+              disabled={selected.length >= 5}
+            >
+              {emoji}
+            </button>
+          ))}
+        </div>
       </div>
 
       <style jsx>{`
