@@ -1,5 +1,4 @@
 import Image from "next/image";
-import { TranslatedText, TranslatedTextWithVars } from "./components/I18nComponents";
 
 export default function Home() {
   return (
@@ -10,33 +9,27 @@ export default function Home() {
         </h1>
         
         <p className="text-xl mb-8 text-gray-700 dark:text-gray-300">
-          <TranslatedText textKey="app.slogan" fallback="用Emoji表达中国成语，挑战你的创意思维！" />
+          用Emoji表达中国成语，挑战你的创意思维！
         </p>
         
         <div className="flex gap-6 justify-center mb-12">
           <div className="flex flex-col items-center p-4 hover:scale-105 transition-transform">
             <span className="text-5xl mb-2">🧠</span>
-            <h3 className="font-semibold">
-              <TranslatedText textKey="home.features.creative" fallback="创意挑战" />
-            </h3>
+            <h3 className="font-semibold">创意挑战</h3>
           </div>
           <div className="flex flex-col items-center p-4 hover:scale-105 transition-transform">
             <span className="text-5xl mb-2">🤖</span>
-            <h3 className="font-semibold">
-              <TranslatedText textKey="home.features.ai" fallback="AI 点评" />
-            </h3>
+            <h3 className="font-semibold">AI 点评</h3>
           </div>
           <div className="flex flex-col items-center p-4 hover:scale-105 transition-transform">
             <span className="text-5xl mb-2">🏆</span>
-            <h3 className="font-semibold">
-              <TranslatedText textKey="home.features.score" fallback="百分评分" />
-            </h3>
+            <h3 className="font-semibold">百分评分</h3>
           </div>
         </div>
 
         <a href="/game">
           <button className="px-8 py-3 bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white rounded-full font-medium text-lg pulse shadow-lg hover:shadow-xl">
-            <TranslatedText textKey="home.startButton" fallback="开始挑战" />
+            开始挑战
           </button>
         </a>
       </div>
