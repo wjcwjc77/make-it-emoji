@@ -3,7 +3,7 @@ import emojiData from "../../data/chengyu_emoji.json";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Confetti } from "../components/Confetti";
-import { TranslatedText } from "../components/I18nComponents";
+import { TranslatedText, TranslatedTextWithVars } from "../components/I18nComponents";
 
 // 通用emoji池，用于随机添加额外选项
 const COMMON_EMOJIS = [
@@ -158,8 +158,14 @@ export default function GamePage() {
       
       {friendScore && (
         <div className="mb-6 bg-yellow-100 dark:bg-yellow-900/30 border-l-4 border-yellow-400 p-4 rounded-r-lg text-sm fade-in-once">
-          <p className="font-medium">挑战模式！</p>
-          <p>你的朋友挑战「{phrase}」获得了 {friendScore} 分，看看你能不能超越TA！</p>
+          <p className="font-medium"><TranslatedText textKey="game.challengeMode.title" fallback="挑战模式！" /></p>
+          <p>
+            <TranslatedTextWithVars 
+              textKey="game.challengeMode.description" 
+              vars={{ phrase, score: friendScore }} 
+              fallback={`你的朋友挑战「${phrase}」获得了 ${friendScore} 分，看看你能不能超越TA！`} 
+            />
+          </p>
         </div>
       )}
       
@@ -187,7 +193,9 @@ export default function GamePage() {
               ))}
             </div>
           ) : (
-            <p className="text-gray-400 dark:text-gray-500">请从上方选择Emoji</p>
+            <p className="text-gray-400 dark:text-gray-500">
+              <TranslatedText textKey="game.challengeMode.placeholderText" fallback="请从下方选择Emoji" />
+            </p>
           )}
         </div>
 
