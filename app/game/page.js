@@ -1,7 +1,7 @@
 "use client";
 import emojiData from "../../data/chengyu_emoji.json";
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Confetti } from "../components/Confetti";
 
 // 通用emoji池，用于随机添加额外选项
@@ -51,6 +51,7 @@ export default function GamePage() {
   const [columnCount, setColumnCount] = useState(4); // 默认为移动设备的4列
   
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   // 检测窗口大小变化并更新列数
   useEffect(() => {
@@ -188,7 +189,7 @@ export default function GamePage() {
     const availableEmojis = removeDuplicates([...originalPool, ...selected]);
     localStorage.setItem("availableEmojis", JSON.stringify(availableEmojis));
     
-    window.location.href = "/result";
+    router.push("/result");
   };
 
   if (isLoading) {

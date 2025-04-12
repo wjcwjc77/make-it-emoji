@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import html2canvas from "html2canvas";
 import QRCode from "qrcode";
 import ProgressCircle from "../components/ProgressCircle";
@@ -167,7 +168,7 @@ export default function ResultPage() {
     return () => {
       if (thinkingInterval) clearInterval(thinkingInterval);
     };
-  }, [clientIP]);
+  }, [clientIP, isLoading]);
 
   // 根据分数获取评分等级和颜色
   const getScoreLevel = (score) => {
@@ -446,13 +447,13 @@ export default function ResultPage() {
                     <div style={{ marginTop: "1rem", marginBottom: "0.5rem" }}>
                       <div style={{ fontSize: "0.75rem", color: "#666666", marginBottom: "0.5rem" }}>扫码来挑战我！</div>
                       <div style={{ display: "flex", justifyContent: "center" }}>
-                        <img src={qrCodeUrl} alt="挑战二维码" style={{ width: "120px", height: "120px" }} />
+                        <Image src={qrCodeUrl} alt="挑战二维码" width={120} height={120} />
                       </div>
                     </div>
                   )}
                   
                   <div style={{ marginTop: "1rem", fontSize: "0.75rem", color: "#888888", borderTop: "1px solid #eee", paddingTop: "0.5rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <img src="/favicon.ico" alt="emoji-master" style={{ width: "16px", height: "16px", marginRight: "4px" }} />
+                    <Image src="/favicon.ico" alt="emoji-master" width={16} height={16} style={{ marginRight: "4px" }} />
                     <span>emoji-master - emoji-master.com</span>
                   </div>
                 </div>
