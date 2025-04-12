@@ -3,6 +3,7 @@ import emojiData from "../../data/chengyu_emoji.json";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Confetti } from "../components/Confetti";
+import { TranslatedText } from "../components/I18nComponents";
 
 // 通用emoji池，用于随机添加额外选项
 const COMMON_EMOJIS = [
@@ -43,8 +44,9 @@ function getRandomEmojis(existingEmojis, count = 5) {
 
 export default function GamePage() {
   const [phrase, setPhrase] = useState("");
-  const [emojis, setEmojis] = useState([]);
+  const [availableEmojis, setAvailableEmojis] = useState([]);
   const [selected, setSelected] = useState([]);
+  const [originalEmojiPool, setOriginalEmojiPool] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showConfetti, setShowConfetti] = useState(false);
   const [friendScore, setFriendScore] = useState(null);
@@ -84,7 +86,7 @@ export default function GamePage() {
       // 随机排序最终的emoji列表，增加每次游戏的新鲜感
       const shuffledEmojis = [...finalEmojis].sort(() => Math.random() - 0.5);
       
-      setEmojis(shuffledEmojis);
+      setAvailableEmojis(shuffledEmojis);
       
       // 保存原始的uniqueEmojis用于传递给评分API
       localStorage.setItem("originalEmojiPool", JSON.stringify(uniqueEmojis));
@@ -144,7 +146,7 @@ export default function GamePage() {
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
         <div className="text-center fade-in">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
-          <h2 className="text-xl">成语加载中...</h2>
+          <h2 className="text-xl"><TranslatedText textKey="game.loading" fallback="成语加载中..." /></h2>
         </div>
       </div>
     );
@@ -163,34 +165,20 @@ export default function GamePage() {
       
       <div className="card p-8 mb-8">
         <h2 className="text-3xl font-bold text-center mb-2">
-          用Emoji表达：
+          <TranslatedText textKey="game.expression" fallback="用Emoji表达：" />
         </h2>
         <div className="text-4xl font-bold text-center p-4 mb-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
           {phrase}
         </div>
         <p className="text-center text-gray-500 dark:text-gray-400 mb-6">
-          从下方选择最多 5 个Emoji来表达这个成语
+          <TranslatedText textKey="game.selectEmojis" fallback="从下方选择最多 5 个Emoji来表达这个成语" />
         </p>
       </div>
 
       <div className="card p-6 mb-8">
-        <h3 className="text-xl font-semibold mb-4">选择表情：</h3>
-        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
-          {emojis.map((emoji, idx) => (
-            <button 
-              key={idx} 
-              className="text-4xl p-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all hover:scale-110 hover:shadow-md"
-              onClick={() => handleSelect(emoji)}
-              disabled={selected.length >= 5}
-            >
-              {emoji}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="card p-6 mb-8">
-        <h3 className="text-xl font-semibold mb-4">你的选择：</h3>
+        <h3 className="text-xl font-semibold mb-4">
+          <TranslatedText textKey="game.yourSelection" fallback="你的选择" />:
+        </h3>
         <div className="min-h-24 flex items-center justify-center">
           {selected.length > 0 ? (
             <div className="flex gap-4 text-5xl">
@@ -209,7 +197,7 @@ export default function GamePage() {
             onClick={handleUndo}
             disabled={selected.length === 0}
           >
-            撤销一个
+            <TranslatedText textKey="game.actions.undo" fallback="撤销一个" />
           </button>
 
           <button 
@@ -217,8 +205,26 @@ export default function GamePage() {
             onClick={handleClear}
             disabled={selected.length === 0}
           >
-            清空选择
+            <TranslatedText textKey="game.actions.clear" fallback="清空选择" />
           </button>
+        </div>
+      </div>
+
+      <div className="card p-6 mb-8">
+        <h3 className="text-xl font-semibold mb-4">
+          <TranslatedText textKey="game.availableEmojis" fallback="可用表情" />:
+        </h3>
+        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
+          {availableEmojis.map((emoji, idx) => (
+            <button 
+              key={idx} 
+              className="text-4xl p-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all hover:scale-110 hover:shadow-md"
+              onClick={() => handleSelect(emoji)}
+              disabled={selected.length >= 5}
+            >
+              {emoji}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -228,7 +234,7 @@ export default function GamePage() {
           onClick={handleSubmit}
           disabled={selected.length === 0}
         >
-          提交答案
+          <TranslatedText textKey="game.actions.submit" fallback="提交答案" />
         </button>
       </div>
 

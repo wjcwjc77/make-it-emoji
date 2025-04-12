@@ -436,7 +436,7 @@ export default function ResultPage() {
                   className="bg-white border p-6 rounded-lg shadow text-center"
                   style={{ color: "#333333", width: '100%', boxSizing: 'border-box' }}
                 >
-                  <div style={{ color: "#666666", fontSize: "0.875rem", marginBottom: "0.5rem" }}>你刚才挑战的是</div>
+                  <div style={{ color: "#666666", fontSize: "0.875rem", marginBottom: "0.5rem" }}>您刚才挑战的是</div>
                   <div style={{ fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.5rem", color: "#000000", wordBreak: "break-all" }}>{phrase}</div>
                   <div style={{ fontSize: "1.875rem", marginBottom: "0.5rem" }}>{emojis.join(" ")}</div>
                   <div style={{ fontSize: "1.25rem", fontWeight: "bold", marginBottom: "0.5rem", color: "#E74C3C" }}>🔥 得分：{score} 分</div>
@@ -453,7 +453,7 @@ export default function ResultPage() {
                   
                   <div style={{ marginTop: "1rem", fontSize: "0.75rem", color: "#888888", borderTop: "1px solid #eee", paddingTop: "0.5rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <img src="/favicon.ico" alt="emoji-master" style={{ width: "16px", height: "16px", marginRight: "4px" }} />
-                    <span>emoji-master - emoji-master.com</span>
+                    <span>emoji-master.com</span>
                   </div>
                 </div>
               </div>
