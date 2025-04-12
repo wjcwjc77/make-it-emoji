@@ -48,13 +48,21 @@ export async function POST(req) {
       model_feedback: playerData.model_feedback.substring(0, 30) + '...' // 日志中截断评语
     });
     
-    const { error } = await supabase.from("emoji_annotations").insert(playerData);
+    // 即发即忘模式: 立即返回响应，同时在后台处理数据库操作
+    // 不使用await，让数据库操作在后台进行
+    supabase.from("emoji_annotations").insert(playerData)
+      .then(({ error }) => {
+        if (error) {
+          console.error("Supabase error:", error);
+        } else {
+          console.log("Data saved successfully");
+        }
+      })
+      .catch(error => {
+        console.error("Database operation failed:", error);
+      });
     
-    if (error) {
-      console.error("Supabase error:", error);
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-    }
-    
+    // 立即返回成功响应
     return NextResponse.json({ 
       success: true,
       ip: clientIP 

@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "emoji-master - 成语表情挑战",
+  title: "emoji-master.com - 成语表情挑战",
   description: "用Emoji表达中国成语，挑战你的创意思维！",
   keywords: ["emoji", "成语", "中文", "游戏", "创意"],
   authors: [{ name: "emoji-master" }],
@@ -54,7 +54,7 @@ export default function RootLayout({ children }) {
         </main>
         <footer className="mt-12 py-6 border-t border-gray-200 dark:border-gray-800">
           <div className="container mx-auto px-4 text-center text-sm text-gray-500 dark:text-gray-400">
-            <p>© {new Date().getFullYear()} emoji-master - 成语表情挑战</p>
+            <p>© {new Date().getFullYear()} emoji-master.com 成语表情挑战</p>
           </div>
         </footer>
       </body>

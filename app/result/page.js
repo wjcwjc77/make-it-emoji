@@ -27,6 +27,7 @@ export default function ResultPage() {
   const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [clientIP, setClientIP] = useState("");
   const cardRef = useRef(null);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 
   // 获取客户端IP
   useEffect(() => {
@@ -189,13 +190,13 @@ export default function ResultPage() {
   // 分享功能
   const handleShare = () => {
     const scoreInfo = getScoreLevel(score);
-    const shareText = `我在emoji-master中表达"${phrase}"，获得了${score}分！\n成功晋级【${scoreInfo.level}】🎉\n我的表达：${emojis.join(" ")}\nAI的表达：${suggestedEmojis}\n\n有本事你也来挑战一下？👉 #emoji-master #成语挑战`;
+    const shareText = `我在emoji-master.com中表达"${phrase}"，获得了${score}分！\n成功晋级【${scoreInfo.level}】🎉\n我的表达：${emojis.join(" ")}\nAI的表达：${suggestedEmojis}\n\n有本事你也来挑战一下？👉 #emoji-master.com #成语挑战`;
     
     setShowShareTip(false);
     
     if (navigator.share) {
       navigator.share({
-        title: '🎮 emoji-master挑战结果',
+        title: '🎮 emoji-master.com挑战结果',
         text: shareText,
       }).catch(console.error);
     } else {
@@ -229,7 +230,8 @@ export default function ResultPage() {
     try {
       const qrDataUrl = await QRCode.toDataURL(url, {
         margin: 1,
-        width: 120,
+        width: 100, // 减小尺寸
+        errorCorrectionLevel: 'M', // 降低纠错级别以加快生成
         color: {
           dark: '#000000',
           light: '#ffffff'
@@ -244,63 +246,111 @@ export default function ResultPage() {
   // 生成分享图片
   const handleShareImage = async () => {
     try {
+      setIsGeneratingImage(true);
+      
       // 先生成挑战链接及其二维码
       const url = `${window.location.origin}/game?phrase=${encodeURIComponent(phrase)}&score=${score}`;
       if (!qrCodeUrl) {
         await generateQRCode(url);
       }
       
-      // 临时移除hidden类
+      // 准备分享卡片
       const cardElement = cardRef.current;
       const cardParent = cardElement.parentNode;
       
-      // 先显示卡片
+      // 将卡片设置为可见但透明，保持在视图内
+      cardParent.classList.remove('hidden');
       cardParent.style.position = 'fixed';
       cardParent.style.top = '50%';
       cardParent.style.left = '50%';
       cardParent.style.transform = 'translate(-50%, -50%)';
-      cardParent.style.zIndex = '-1'; // 负值z-index让它在视图后面
-      cardParent.style.visibility = 'visible';
-      cardParent.classList.remove('hidden');
+      cardParent.style.opacity = '0';
+      cardParent.style.pointerEvents = 'none';
+      cardParent.style.zIndex = '999';
       
-      // 生成图片
-      const canvas = await html2canvas(cardElement, {
-        backgroundColor: null,
-        useCORS: true,
-        scale: 2, // 提高清晰度
-        logging: true
-      });
+      // 给卡片足够的时间完成布局和渲染
+      await new Promise(resolve => setTimeout(resolve, 100));
       
-      // 重新隐藏卡片
-      cardParent.classList.add('hidden');
-      cardParent.style.position = '';
-      cardParent.style.top = '';
-      cardParent.style.left = '';
-      cardParent.style.transform = '';
-      cardParent.style.zIndex = '';
-      cardParent.style.visibility = '';
-      
-      // 下载图片
-      const imgData = canvas.toDataURL("image/png");
-      const link = document.createElement("a");
-      link.download = `emoji-challenge-${phrase}.png`;
-      link.href = imgData;
-      link.click();
+      try {
+        // 使用更可靠的html2canvas配置
+        const canvas = await html2canvas(cardElement, {
+          backgroundColor: '#ffffff', // 明确指定白色背景
+          useCORS: true,
+          scale: 1.2,
+          allowTaint: true,
+          logging: false,
+          // 不使用foreignObjectRendering，它可能导致黑屏问题
+          foreignObjectRendering: false,
+          removeContainer: false,
+          imageTimeout: 2000, // 给图片加载更多时间
+          onclone: (document) => {
+            const clonedElement = document.querySelector('[data-html2canvas-clone="true"]');
+            if (clonedElement) {
+              // 确保克隆元素是可见的
+              clonedElement.style.opacity = '1';
+              clonedElement.style.visibility = 'visible';
+              clonedElement.style.backgroundColor = '#ffffff';
+              
+              // 处理可能的图片加载问题
+              const images = clonedElement.querySelectorAll('img');
+              images.forEach(img => {
+                // 为图片添加crossOrigin属性
+                img.crossOrigin = 'anonymous';
+                
+                // 如果是二维码图片，确保它正确加载
+                if (img.alt === '挑战二维码' && qrCodeUrl) {
+                  img.src = qrCodeUrl;
+                }
+              });
+            }
+          }
+        });
+        
+        // 重新隐藏卡片
+        cardParent.classList.add('hidden');
+        cardParent.style.position = '';
+        cardParent.style.top = '';
+        cardParent.style.left = '';
+        cardParent.style.transform = '';
+        cardParent.style.opacity = '';
+        cardParent.style.pointerEvents = '';
+        cardParent.style.zIndex = '';
+        
+        // 下载图片
+        const imgData = canvas.toDataURL("image/png"); // 改回PNG以保证图片质量
+        const link = document.createElement("a");
+        link.download = `emoji-challenge-${phrase}.png`;
+        link.href = imgData;
+        link.click();
+      } catch (err) {
+        console.error("图片绘制错误:", err);
+      } finally {
+        setIsGeneratingImage(false);
+      }
     } catch (error) {
       console.error("生成分享图片失败:", error);
-      alert("生成分享图片失败，请重试");
+      setIsGeneratingImage(false);
     }
   };
 
-  const scoreInfo = score !== null ? getScoreLevel(score) : { level: "", color: "" };
-
-  // 在组件加载后生成初始二维码
+  // 预加载共享卡片 - 在组件挂载后预先准备分享图片所需资源
   useEffect(() => {
-    if (score !== null && phrase && !qrCodeUrl) {
-      const url = `${window.location.origin}/game?phrase=${encodeURIComponent(phrase)}&score=${score}`;
-      generateQRCode(url);
+    if (score !== null && phrase) {
+      // 预生成二维码
+      if (!qrCodeUrl) {
+        const url = `${window.location.origin}/game?phrase=${encodeURIComponent(phrase)}&score=${score}`;
+        generateQRCode(url);
+      }
+      
+      // 预加载html2canvas需要的资源
+      import('html2canvas').then(module => {
+        // 引用已加载，在后台准备好
+        console.log("html2canvas预加载完成");
+      });
     }
   }, [score, phrase, qrCodeUrl]);
+
+  const scoreInfo = score !== null ? getScoreLevel(score) : { level: "", color: "" };
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -434,50 +484,115 @@ export default function ResultPage() {
               <div className="hidden" style={{ width: '320px', height: 'auto', overflow: 'hidden' }}>
                 <div
                   ref={cardRef}
-                  className="bg-white border p-6 rounded-lg shadow text-center"
-                  style={{ color: "#333333", width: '100%', boxSizing: 'border-box' }}
+                  className="bg-white border p-4 rounded-lg shadow text-center"
+                  style={{ 
+                    color: "#333333", 
+                    width: '100%', 
+                    boxSizing: 'border-box',
+                    backgroundColor: '#ffffff' 
+                  }}
                 >
-                  <div style={{ color: "#666666", fontSize: "0.875rem", marginBottom: "0.5rem" }}>你刚才挑战的是</div>
-                  <div style={{ fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.5rem", color: "#000000", wordBreak: "break-all" }}>{phrase}</div>
-                  <div style={{ fontSize: "1.875rem", marginBottom: "0.5rem" }}>{emojis.join(" ")}</div>
-                  <div style={{ fontSize: "1.25rem", fontWeight: "bold", marginBottom: "0.5rem", color: "#E74C3C" }}>🔥 得分：{score} 分</div>
+                  {/* 标题 */}
+                  <h3 style={{ color: "#333333", fontSize: "14px", margin: "0 0 8px 0", fontWeight: "normal" }}>你刚才挑战的是</h3>
+                  <h2 style={{ fontSize: "24px", fontWeight: "bold", margin: "0 0 8px 0", color: "#000000", wordBreak: "break-all" }}>{phrase}</h2>
                   
-                  {/* 添加等级称号 */}
-                  <div 
-                    style={{ 
-                      fontSize: "1rem", 
-                      fontWeight: "bold", 
-                      marginBottom: "0.5rem", 
-                      background: scoreInfo.color.replace('bg-', ''), 
-                      WebkitBackgroundClip: "text", 
-                      WebkitTextFillColor: "transparent",
-                      backgroundClip: "text",
-                      padding: "4px",
-                      display: "inline-block"
-                    }}
-                  >
-                    <span style={{ fontSize: "1.25rem" }}>
-                      {Array.from(scoreInfo.level.matchAll(/[\p{Emoji}\u200D]+/gu)).map(match => match[0]).join('')}
+                  {/* Emoji表达 */}
+                  <div style={{ 
+                    fontSize: "28px", 
+                    margin: "0 0 8px 0", 
+                    lineHeight: 1.2,
+                    padding: "8px", 
+                    background: "#f8f8f8",
+                    borderRadius: "8px"
+                  }}>{emojis.join(" ")}</div>
+                  
+                  {/* 得分 */}
+                  <div style={{ 
+                    fontSize: "20px", 
+                    fontWeight: "bold", 
+                    margin: "0 0 8px 0", 
+                    color: "#E74C3C",
+                    padding: "4px",
+                    background: "#fff5f5",
+                    borderRadius: "8px",
+                    display: "inline-block"
+                  }}>🔥 得分：{score} 分</div>
+                  
+                  {/* 称号 */}
+                  <div style={{ 
+                    fontSize: "16px", 
+                    fontWeight: "bold", 
+                    margin: "0 0 8px 0", 
+                    padding: "8px",
+                    background: "#f0e6f5",
+                    borderRadius: "8px",
+                    display: "inline-block"
+                  }}>
+                    <span style={{ fontSize: "20px", marginRight: "4px" }}>
+                      {Array.from(scoreInfo.level.matchAll(/[\p{Emoji}\u200D]+/gu) || []).map(match => match[0]).join('')}
                     </span>
-                    <span>
-                      {scoreInfo.level.replace(/[\p{Emoji}\u200D]+/gu, '')}
+                    <span style={{ color: "#8E44AD" }}>
+                      {scoreInfo.level?.replace(/[\p{Emoji}\u200D]+/gu, '') || ""}
                     </span>
                   </div>
                   
-                  <div style={{ fontSize: "0.875rem", color: "#666666", fontStyle: "italic", marginBottom: "0.5rem", maxHeight: "80px", overflow: "hidden" }}>{comparison?.substring(0, 120)}{comparison?.length > 120 ? "..." : ""}</div>
+                  {/* 评语 */}
+                  <div style={{ 
+                    fontSize: "14px", 
+                    color: "#666666", 
+                    margin: "8px 0", 
+                    maxHeight: "60px", 
+                    overflow: "hidden",
+                    textAlign: "left",
+                    padding: "8px",
+                    background: "#f9f9f9",
+                    borderRadius: "8px"
+                  }}>
+                    {comparison?.substring(0, 80)}{comparison?.length > 80 ? "..." : ""}
+                  </div>
                   
+                  {/* 二维码 */}
                   {qrCodeUrl && (
-                    <div style={{ marginTop: "1rem", marginBottom: "0.5rem" }}>
-                      <div style={{ fontSize: "0.75rem", color: "#666666", marginBottom: "0.5rem" }}>扫码来挑战我！</div>
+                    <div style={{ margin: "16px 0 8px 0", background: "#ffffff", padding: "8px", borderRadius: "8px" }}>
+                      <div style={{ fontSize: "12px", color: "#666666", margin: "0 0 8px 0" }}>扫码来挑战我！</div>
                       <div style={{ display: "flex", justifyContent: "center" }}>
-                        <Image src={qrCodeUrl} alt="挑战二维码" width={120} height={120} />
+                        <img 
+                          src={qrCodeUrl} 
+                          alt="挑战二维码" 
+                          width={100} 
+                          height={100} 
+                          style={{ 
+                            display: "block", 
+                            margin: "0 auto",
+                            backgroundColor: "#ffffff",
+                            padding: "4px",
+                            border: "1px solid #eaeaea"
+                          }} 
+                        />
                       </div>
                     </div>
                   )}
                   
-                  <div style={{ marginTop: "1rem", fontSize: "0.75rem", color: "#888888", borderTop: "1px solid #eee", paddingTop: "0.5rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Image src="/favicon.ico" alt="emoji-master" width={16} height={16} style={{ marginRight: "4px" }} />
-                    <span>emoji-master - emoji-master.com</span>
+                  {/* 底部 */}
+                  <div style={{ 
+                    marginTop: "16px", 
+                    fontSize: "12px", 
+                    color: "#666666", 
+                    borderTop: "1px solid #eee", 
+                    paddingTop: "8px", 
+                    display: "flex", 
+                    alignItems: "center", 
+                    justifyContent: "center",
+                    background: "#ffffff"
+                  }}>
+                    <img 
+                      src="/favicon.ico" 
+                      alt="emoji-master.com" 
+                      width={16} 
+                      height={16} 
+                      style={{ marginRight: "4px" }} 
+                    />
+                    <span>emoji-master.com</span>
                   </div>
                 </div>
               </div>
@@ -496,12 +611,29 @@ export default function ResultPage() {
             <>
               <button
                 onClick={handleShareImage}
-                className="px-6 py-3 flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
+                disabled={isGeneratingImage}
+                className={`px-6 py-3 flex items-center gap-2 ${
+                  isGeneratingImage 
+                    ? "bg-gray-400" 
+                    : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                } text-white rounded-lg transition-all shadow-lg hover:shadow-xl hover:-translate-y-1`}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                  <path fillRule="evenodd" d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0021 18v-1.94l-2.69-2.689a1.5 1.5 0 00-2.12 0l-.88.879.97.97a.75.75 0 11-1.06 1.06l-5.16-5.159a1.5 1.5 0 00-2.12 0L3 16.061zm10.125-7.81a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0z" clipRule="evenodd" />
-                </svg>
-                生成分享图片
+                {isGeneratingImage ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    生成中...
+                  </>
+                ) : (
+                  <>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                      <path fillRule="evenodd" d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0021 18v-1.94l-2.69-2.689a1.5 1.5 0 00-2.12 0l-.88.879.97.97a.75.75 0 11-1.06 1.06l-5.16-5.159a1.5 1.5 0 00-2.12 0L3 16.061zm10.125-7.81a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0z" clipRule="evenodd" />
+                    </svg>
+                    生成分享图片
+                  </>
+                )}
               </button>
               
               <button
