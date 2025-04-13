@@ -374,10 +374,7 @@ function GameContent() {
             {chengyuData[phrase]?.explanation || `「${phrase}」是一个中国成语，请尝试用表情符号来表达它的含义。`}
           </p>
         </div>
-        
-        <p className="text-center text-gray-700 dark:text-gray-300 text-2xl md:text-3xl mt-4 mb-0 px-2 sm:px-6 leading-relaxed relative z-10 font-medium">
-          从下方选择最多 5 个Emoji来表达这个成语
-        </p>
+      
       </div>
 
       <div className="card p-6 md:p-8 mb-8 bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden border border-green-100 dark:border-green-800/30 relative">
@@ -390,7 +387,7 @@ function GameContent() {
              
         <div className="flex justify-between items-center mb-4 md:mb-6 relative z-10">
           <h3 className="text-xl md:text-2xl font-semibold text-green-700 dark:text-green-300 tracking-wide">你的选择：</h3>
-          <div className="bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-full text-sm font-medium text-green-700 dark:text-green-300 flex items-center gap-1.5">
+          <div className="bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-full text-base font-medium text-green-700 dark:text-green-300 flex items-center gap-1.5">
             <span>已选</span>
             <span className={`${selected.length === 5 ? 'text-amber-600 dark:text-amber-400 font-bold' : 'text-green-600 dark:text-green-300'}`}>
               {selected.length}
@@ -408,7 +405,7 @@ function GameContent() {
             </div>
           ) : (
             <p className="text-gray-500 dark:text-gray-400 text-2xl md:text-3xl leading-relaxed">
-              请从下方选择Emoji
+              请从下方挑选 1-5 个表情，巧妙表达这个成语含义
             </p>
           )}
         </div>
