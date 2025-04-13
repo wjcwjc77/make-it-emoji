@@ -1,7 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
-import Image from "next/image";
 import "./globals.css";
+import ClientHeader from "./components/ClientHeader";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,6 +18,9 @@ export const metadata = {
   description: "用Emoji表达中国成语，挑战你的创意思维！",
   keywords: ["emoji", "成语", "中文", "游戏", "创意"],
   authors: [{ name: "emoji-master" }],
+};
+
+export const viewport = {
   colorScheme: "light dark",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
@@ -27,34 +30,27 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="zh-CN">
+    <html lang="zh-CN" className="scroll-smooth">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        <header className="fixed top-0 left-0 w-full bg-white/80 dark:bg-black/80 backdrop-blur-md z-10 shadow-sm">
-          <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-            <Link href="/" className="text-2xl font-bold flex items-center gap-2">
-              <Image src="/favicon.ico" alt="emoji-master" width={32} height={32} className="w-8 h-8" />
-              <span>emoji-master</span>
-            </Link>
-            <nav>
-              <ul className="flex gap-4">
-                <li>
-                  <Link href="/" className="hover:text-primary transition-colors">首页</Link>
-                </li>
-                <li>
-                  <Link href="/game" className="hover:text-primary transition-colors">挑战</Link>
-                </li>
-              </ul>
-            </nav>
-          </div>
-        </header>
-        <main className="pt-16">
+        <ClientHeader />
+        
+        <main className="pt-16 sm:pt-20 flex-1">
           {children}
         </main>
-        <footer className="mt-12 py-6 border-t border-gray-200 dark:border-gray-800">
-          <div className="container mx-auto px-4 text-center text-sm text-gray-500 dark:text-gray-400">
-            <p>© {new Date().getFullYear()} emoji-master.com 成语表情挑战</p>
+        
+        <footer className="mt-auto py-4 sm:py-6 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
+          <div className="container mx-auto px-4 max-w-6xl">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-4">
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                © {new Date().getFullYear()} emoji-master.com 成语表情挑战
+              </p>
+              <div className="flex gap-4 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                <Link href="/" className="hover:text-primary transition-colors">首页</Link>
+                <Link href="/game" className="hover:text-primary transition-colors">开始挑战</Link>
+              </div>
+            </div>
           </div>
         </footer>
       </body>

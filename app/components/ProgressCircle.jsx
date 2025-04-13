@@ -52,10 +52,38 @@ export default function ProgressCircle({
     return () => cancelAnimationFrame(animationFrameId);
   }, [score]);
 
-  // 动态颜色插值函数（红 -> 橙 -> 黄 -> 绿）
+  // 动态颜色插值函数（红 -> 橙 -> 黄 -> 绿），使用十六进制而不是 hsl
   const getInterpolatedColor = (value) => {
-    const hue = (value / 100) * 140; // 红 0° -> 绿 140°
-    return `hsl(${hue}, 100%, 50%)`;
+    // 定义一个颜色映射数组，从红到绿
+    const colorStops = [
+      { value: 0, color: "#ef4444" },   // 红色 (0%)
+      { value: 25, color: "#f97316" },  // 橙色 (25%)
+      { value: 50, color: "#eab308" },  // 黄色 (50%)
+      { value: 75, color: "#84cc16" },  // 黄绿色 (75%)
+      { value: 100, color: "#22c55e" }  // 绿色 (100%)
+    ];
+    
+    // 找到当前值所在的区间
+    let lowerStop = colorStops[0];
+    let upperStop = colorStops[colorStops.length - 1];
+    
+    for (let i = 0; i < colorStops.length - 1; i++) {
+      if (value >= colorStops[i].value && value <= colorStops[i + 1].value) {
+        lowerStop = colorStops[i];
+        upperStop = colorStops[i + 1];
+        break;
+      }
+    }
+    
+    // 计算在当前区间中的位置 (0~1)
+    const range = upperStop.value - lowerStop.value;
+    const position = range === 0 ? 0 : (value - lowerStop.value) / range;
+    
+    // 根据score值返回对应区间的色值，不做复杂插值，避免兼容性问题
+    if (value < 25) return "#ef4444";
+    if (value < 50) return "#f97316";
+    if (value < 75) return "#eab308";
+    return "#22c55e";
   };
 
   const colorA = useMemo(() => {
