@@ -4,11 +4,11 @@ import { headers } from "next/headers";
 export async function GET() {
   let ip = 'unknown';
   
-  // 直接使用 headers() API
-  const headersList = headers();
-  
   try {
-    // 尝试从各种头信息中获取IP
+    // 获取请求头
+    const headersList = headers();
+    
+    // 正确使用 headersList
     const forwardedFor = headersList.get('x-forwarded-for') || '';
     const realIP = headersList.get('x-real-ip') || '';
     const cfConnectingIP = headersList.get('cf-connecting-ip') || '';
@@ -24,7 +24,7 @@ export async function GET() {
     } else if (xClientIP) {
       ip = xClientIP;
     } else {
-      ip = '::1'; // 本地开发环境
+      ip = '127.0.0.1'; // 本地开发环境
     }
     
     // 简化日志以避免过多输出
