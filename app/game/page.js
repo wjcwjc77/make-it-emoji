@@ -4,7 +4,15 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Confetti } from "../components/Confetti";
 import chengyuData from '../../data/enhanced_chengyu.json';
+import EmojiPicker from 'emoji-picker-react';
 
+function App() {
+  return (
+    <div>
+      <EmojiPicker />
+    </div>
+  );
+}
 // 通用emoji池，用于随机添加额外选项
 const COMMON_EMOJIS = [
   "😀", "😂", "🤣", "😊", "🥰", "😎", "🤔", "🤯", "😱", "😴",
@@ -182,6 +190,7 @@ function LoadingAnimation() {
 // 游戏内容组件
 function GameContent() {
   const [phrase, setPhrase] = useState("");
+  const [userName, setUserName] = useState("");
   const [emojis, setEmojis] = useState([]);
   const [selected, setSelected] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -214,6 +223,10 @@ function GameContent() {
   useEffect(() => {
     const loadGame = () => {
       // 检查是否有朋友的挑战链接参数
+      const name = searchParams.get("name");
+      if (name) {
+        setUserName(name);
+      }
       const sharedPhrase = searchParams.get("phrase");
       const score = searchParams.get("score");
 
@@ -229,7 +242,7 @@ function GameContent() {
         selectedPhrase = phrases[Math.floor(Math.random() * phrases.length)];
       }
 
-      setPhrase(selectedPhrase);
+      setPhrase(name || selectedPhrase);
 
       // 加载并准备emoji池
       const phraseEmojis = loadEmojisForPhrase(selectedPhrase);
@@ -251,6 +264,7 @@ function GameContent() {
   }, [searchParams, columnCount]);
 
   const handleSelect = (emoji) => {
+    console.log("handleSelect called with emoji:", emoji);
     if (selected.length < 5) {
       setSelected([...selected, emoji]);
 
@@ -454,7 +468,7 @@ function GameContent() {
             </div>
           )}
         </div>
-        <div className="grid grid-cols-5 md:grid-cols-8 gap-2.5 md:gap-4 relative z-10">
+        {/* <div className="grid grid-cols-5 md:grid-cols-8 gap-2.5 md:gap-4 relative z-10">
           {emojis.map((emoji, idx) => (
             <button 
               key={idx} 
@@ -469,6 +483,16 @@ function GameContent() {
               {emoji}
             </button>
           ))}
+        </div> */}
+        <div>
+          <EmojiPicker   width="100%" searchDisabled={true}
+            onEmojiClick={(emojiData, event) => {
+              if (selected.length < 5) {
+                console.log('Emoji selected:', emojiData.emoji);
+                handleSelect(emojiData.emoji);
+              }
+            }}
+          />
         </div>
       </div>
 
@@ -566,3 +590,4 @@ export default function GamePage() {
     </Suspense>
   );
 }
+

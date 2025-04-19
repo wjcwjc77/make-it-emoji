@@ -71,17 +71,21 @@ export function generateComparison(userEmojis, standardEmojis, similarity, phras
  */
 export function localScoring(userEmojis, phrase) {
   // 检查是否有预计算数据
-  if (!enhancedChengyu[phrase]) {
-    return null; // 没有预计算数据，需要回退到API
-  }
+  // if (!enhancedChengyu[phrase]) {
+  //   // 这里得让模型生成一个standardData.bestAnswer
+  //   return null; // 没有预计算数据，需要回退到API
+  // }
+  
   
   const standardData = enhancedChengyu[phrase];
   const similarity = calculateSimilarity(userEmojis, standardData.bestAnswer);
-  const score = Math.round(similarity * 100);
+const score = Math.max(Math.round(similarity * 100), 70);
+  // 如果是用户自己输入的name，那么就让模型来生成一个；如果用户选择的是别人的name，那就直接使用enhancedChengyu
   
   return {
     score,
     suggestedEmojis: standardData.bestAnswer,
-    comparison: generateComparison(userEmojis, standardData.bestAnswer, similarity, phrase)
+    comparison: generateComparison(userEmojis, standardData.bestAnswer, similarity, phrase),
+    reason: standardData.reason || ''
   };
 } 

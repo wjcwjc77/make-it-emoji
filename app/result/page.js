@@ -21,12 +21,14 @@ function ResultContent() {
   const [emojis, setEmojis] = useState([]);
   const [suggestedEmojis, setSuggestedEmojis] = useState("");
   const [comparison, setComparison] = useState("");
+  const [reason, setReason] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [thinkingDots, setThinkingDots] = useState(1);
   const [showResults, setShowResults] = useState(false);
   const [showShareTip, setShowShareTip] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [showLevelTitle, setShowLevelTitle] = useState(false);
+  const [showReason, setShowReason] = useState(false);
   const [shareURL, setShareURL] = useState("");
   const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [clientIP, setClientIP] = useState("");
@@ -47,7 +49,7 @@ function ResultContent() {
         setClientIP('fetch-failed');
       }
     }
-    
+
     fetchClientIP();
   }, []);
 
@@ -81,8 +83,8 @@ function ResultContent() {
         const res = await fetch("/api/score", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-            phrase: storedPhrase, 
+          body: JSON.stringify({
+            phrase: storedPhrase,
             emojis: storedEmojis,
             availableEmojis
           }),
@@ -92,42 +94,44 @@ function ResultContent() {
         setScore(data.score);
         setSuggestedEmojis(data.suggestedEmojis);
         setComparison(data.comparison);
-        
+        setReason(data.aiAnswerReason);
+
         console.log("AI评分和评语:", {
           score: data.score,
           suggestion: data.suggestedEmojis,
           feedback: data.comparison?.substring(0, 50) + (data.comparison?.length > 50 ? '...' : '')
         });
-        
+
         // Save the results to the database
         try {
           // 确保评语不为空
           const modelFeedback = data.comparison || `AI认为你的表达很有创意！继续加油！`;
-          
+
           const saveRes = await fetch("/api/save", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               phrase: storedPhrase,
-              player_emojis: storedEmojis, 
+              player_emojis: storedEmojis,
               model_score: data.score,
               model_suggestion: data.suggestedEmojis,
               model_feedback: modelFeedback,
+              ai_answer_reason: data.aiAnswerReason,
               player_ip: clientIP,
               created_at: new Date().toISOString(),
             })
           });
-          
+
           if (!saveRes.ok) {
             throw new Error(`HTTP error! status: ${saveRes.status}`);
           }
-          
+
           await saveRes.json();
         } catch (error) {
           console.error("Error saving results:", error);
           // Continue showing results even if saving fails
         }
-        
+
         // 结果动画延迟
         setTimeout(() => {
           setIsLoading(false);
@@ -141,7 +145,7 @@ function ResultContent() {
               // 显示分享提示并立即开始滚动尝试
               setTimeout(() => {
                 setShowShareTip(true);
-                
+
                 // 使用更强大的滚动函数，支持手机和桌面
                 const scrollToContent = () => {
                   // 首先尝试使用引用进行滚动
@@ -163,10 +167,10 @@ function ResultContent() {
                   } else {
                     // 备用方案：计算滚动位置
                     const isMobile = window.innerWidth < 768;
-                    const scrollTarget = isMobile 
-                      ? document.body.scrollHeight 
+                    const scrollTarget = isMobile
+                      ? document.body.scrollHeight
                       : document.body.scrollHeight * 0.85;
-                      
+
                     try {
                       window.scrollTo({
                         top: scrollTarget,
@@ -179,10 +183,10 @@ function ResultContent() {
                     }
                   }
                 };
-                
+
                 // 执行滚动函数 - 立即尝试第一次
                 scrollToContent();
-                
+
                 // 多次尝试滚动，确保在各种设备上都能正确滚动
                 const scrollAttempts = [300, 600, 1000, 2000];
                 scrollAttempts.forEach(delay => {
@@ -210,18 +214,18 @@ function ResultContent() {
   const handleShare = async () => {
     try {
       setIsGeneratingImage(true);
-      
+
       if (!qrCodeUrl) {
         const qrCodeBlobUrl = await generateQRCode(window.location.href);
         setQrCodeUrl(qrCodeBlobUrl);
       }
-      
+
       // 提取AI评语用于分享图片 - 简化处理逻辑
       let aiComment = '';
       if (comparison) {
         // 直接截取前70个字符作为评语，避免过长
         aiComment = comparison.substring(0, 70);
-        
+
         // 如果截取处正好是句子中间，尝试找到上一个句号位置结束
         const lastPunctIndex = aiComment.lastIndexOf('。');
         if (lastPunctIndex > 30) { // 确保有足够内容
@@ -231,7 +235,7 @@ function ResultContent() {
           aiComment += '...';
         }
       }
-      
+
       const shareBlob = await generateShareImage({
         phrase: phrase,
         score: parseInt(score),
@@ -241,14 +245,14 @@ function ResultContent() {
         getScoreLevel: getScoreLevel,
         aiComment: aiComment  // 添加AI评语参数
       });
-      
+
       // 处理图片输出（下载或分享）
       await handleImageOutput(shareBlob, {
         phrase: phrase,
         score: parseInt(score),
         isMobile: false
       });
-      
+
       // 重置生成状态
       setIsGeneratingImage(false);
     } catch (error) {
@@ -265,7 +269,7 @@ function ResultContent() {
     // 使用工具函数生成挑战链接
     const url = generateChallengeLink({ phrase, score });
     setShareURL(url);
-    
+
     // 生成二维码
     if (!qrCodeUrl) {
       try {
@@ -275,7 +279,7 @@ function ResultContent() {
         console.error("生成二维码失败:", error);
       }
     }
-    
+
     // 复制到剪贴板
     copyToClipboard(url);
   };
@@ -298,23 +302,23 @@ function ResultContent() {
   useEffect(() => {
     setIsLoaded(true);
   }, []);
-  
+
   if (!isLoaded) return null;
 
   return (
     <div className="container mx-auto px-2 sm:px-4 pt-1 pb-4 sm:py-4 max-w-4xl">
       {showConfetti && <Confetti />}
-      
+
       {showShareTip && (
         <div className="fixed bottom-16 right-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white p-3 rounded-lg shadow-lg animate-float z-50 max-w-xs">
           <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white font-bold cursor-pointer"
-               onClick={() => setShowShareTip(false)}>
+            onClick={() => setShowShareTip(false)}>
             ×
           </div>
           <p className="font-bold mb-1 text-sm">🎉 恭喜获得称号！</p>
           <p className="text-xs">生成分享图片，让朋友扫码来挑战你的成绩！</p>
           <div className="mt-1 flex justify-end">
-            <button 
+            <button
               onClick={handleShare}
               className="px-2 py-1 bg-white text-purple-600 rounded-full text-xs font-bold hover:bg-yellow-100 transition-colors">
               分享图片
@@ -322,7 +326,7 @@ function ResultContent() {
           </div>
         </div>
       )}
-      
+
       <div className="mb-2 sm:mb-6">
         {/* 成语显示 - 更紧凑的移动设计 */}
         <div className="card p-3 sm:p-6 mb-3 sm:mb-6 fade-in-once border-t-4 border-primary shadow-md">
@@ -344,10 +348,10 @@ function ResultContent() {
             </h2>
             <div className="text-xl sm:text-4xl mb-1 sm:mb-4 flex flex-wrap justify-center gap-1 p-2 sm:p-4 bg-gradient-to-r from-rose-50 to-amber-50 dark:from-rose-900/10 dark:to-amber-900/10 rounded-lg min-h-[50px] sm:h-[96px] overflow-auto">
               {emojis.map((emoji, index) => (
-                <span 
-                  key={index}  
+                <span
+                  key={index}
                   className={`inline-block ${showResults ? 'animate-fadeInUp' : ''}`}
-                  style={{ 
+                  style={{
                     animationDelay: `${index * 100}ms`,
                     animationFillMode: 'both'
                   }}
@@ -361,17 +365,21 @@ function ResultContent() {
           {isLoading ? (
             <ThinkingEmoji thinkingDots={thinkingDots} />
           ) : suggestedEmojis && (
-            <div className="card p-3 sm:p-6 fade-in border-t-4 border-blue-500 shadow-md h-auto sm:h-[200px]">
+            <div
+              className="card p-3 sm:p-6 fade-in border-t-4 border-blue-500 shadow-md h-auto sm:h-[200px] relative"
+              onMouseEnter={() => setShowReason(true)}
+              onMouseLeave={() => setShowReason(false)}
+            >
               <h2 className="text-base sm:text-xl font-medium mb-2 sm:mb-4 flex items-center gap-1">
                 <span className="w-5 h-5 sm:w-8 sm:h-8 flex items-center justify-center bg-blue-500/10 rounded-full text-blue-500">🤖</span>
                 AI的答案：
               </h2>
               <div className="text-xl sm:text-4xl mb-1 sm:mb-4 flex flex-wrap justify-center gap-1 p-2 sm:p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/10 dark:to-cyan-900/10 rounded-lg min-h-[50px] sm:h-[96px] overflow-auto">
                 {suggestedEmojis.split(' ').map((emoji, index) => (
-                  <span 
-                    key={index} 
+                  <span
+                    key={index}
                     className={`inline-block ${showResults ? 'animate-fadeInUp' : ''}`}
-                    style={{ 
+                    style={{
                       animationDelay: `${index * 100}ms`,
                       animationFillMode: 'both'
                     }}
@@ -380,6 +388,15 @@ function ResultContent() {
                   </span>
                 ))}
               </div>
+              {showReason && (
+                <div className="absolute top-0 left-0 right-0 bottom-0 bg-white/10 backdrop-blur-lg border border-white/20 shadow-xl rounded-xl p-6 text-white z-50 flex items-center justify-center transition-opacity duration-300 shadow-2xl">
+                  <p className="text-sm md:text-base text-center animate-fadeIn leading-relaxed tracking-wide text-gray-900 dark:text-white shadow-[0_0_4px_rgba(255,255,255,0.5)]">
+                    <span className="inline-block text-shadow ">
+                      {reason}
+                    </span>
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -396,21 +413,21 @@ function ResultContent() {
               <div className="w-full flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 mb-4">
                 {/* 分数圆环 - 添加固定尺寸防止压缩 */}
                 <div className="relative w-32 h-32 md:w-40 md:h-40 flex-shrink-0 glow-container">
-                  <ProgressCircle 
-                    score={score} 
+                  <ProgressCircle
+                    score={score}
                     strokeColor="auto"
                     strokeColorEnd="auto"
                     size="w-32 h-32 md:w-40 md:h-40"
                     textSize="text-3xl md:text-4xl"
                   />
                 </div>
-                
+
                 {/* 称号显示 - 改进响应式设计和内容对齐 */}
                 <div className={`relative w-full md:w-auto md:flex-1 max-w-full md:max-w-md px-6 py-6 bg-gradient-to-r from-indigo-100/80 via-purple-100/80 to-pink-100/80 dark:from-indigo-900/30 dark:via-purple-900/30 dark:to-pink-900/30 rounded-lg md:rounded-xl shadow-sm flex flex-col justify-center items-center min-h-[100px] transition-all duration-500 ${showLevelTitle ? 'opacity-100 transform translate-y-0 scale-100' : 'opacity-0 transform translate-y-4 scale-95'}`}>
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white px-4 py-1 rounded-full text-sm font-semibold shadow-lg whitespace-nowrap">
                     称号
                   </div>
-                  
+
                   {/* 使用flex容器包装称号内容 */}
                   <div className="flex flex-wrap justify-center items-center gap-3 w-full">
                     {scoreInfo.level && (
@@ -419,7 +436,7 @@ function ResultContent() {
                         <span className={`text-xl md:text-2xl font-bold text-transparent bg-clip-text inline-block ${scoreInfo.color}`}>
                           {scoreInfo.level.replace(/[\p{Emoji}\u200D]+/gu, '')}
                         </span>
-                        
+
                         {/* 表情部分 */}
                         <span className="text-2xl md:text-3xl inline-block animate-bounce-slow">
                           {Array.from(scoreInfo.level.matchAll(/[\p{Emoji}\u200D]+/gu)).map(match => match[0]).join('')}
@@ -429,10 +446,10 @@ function ResultContent() {
                   </div>
                 </div>
               </div>
-              
+
               {/* AI点评 - 自适应高度 */}
               {comparison ? (
-                <div 
+                <div
                   ref={el => { if (el) cardRef.current = el; }}
                   className="mt-2 md:mt-4 p-3 md:p-5 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-900/50 rounded-lg border-l-4 border-primary shadow-sm min-h-0 w-full"
                 >
@@ -456,17 +473,16 @@ function ResultContent() {
               再来一局
             </button>
           </Link>
-          
+
           {!isLoading && score !== null && (
             <>
               <button
                 onClick={handleShare}
                 disabled={isGeneratingImage}
-                className={`px-4 md:px-6 py-2 md:py-3 flex items-center gap-1 md:gap-2 text-sm md:text-base font-medium ${
-                  isGeneratingImage 
-                    ? "bg-gray-400" 
+                className={`px-4 md:px-6 py-2 md:py-3 flex items-center gap-1 md:gap-2 text-sm md:text-base font-medium ${isGeneratingImage
+                    ? "bg-gray-400"
                     : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                } text-white rounded-lg transition-all shadow-lg hover:shadow-xl hover:-translate-y-1`}
+                  } text-white rounded-lg transition-all shadow-lg hover:shadow-xl hover:-translate-y-1`}
               >
                 {isGeneratingImage ? (
                   <>
@@ -485,7 +501,7 @@ function ResultContent() {
                   </>
                 )}
               </button>
-              
+
               <button
                 onClick={copyShareURL}
                 className="px-4 md:px-6 py-2 md:py-3 flex items-center gap-1 md:gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-lg text-sm md:text-base font-medium transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"

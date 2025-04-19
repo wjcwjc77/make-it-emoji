@@ -2,10 +2,48 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function HomePage() {
+  const [showModal, setShowModal] = useState(false);
+  const [showNameInput, setShowNameInput] = useState(false);
+  const [userName, setUserName] = useState('');
+  const router = useRouter();
+
+  const handleStartChallenge = () => {
+    setShowModal(true);
+  };
+
+  const handleSelectOption = (option) => {
+    if (option === 'other') {
+      setShowModal(false);
+      router.push('/game');
+    } else if (option === 'self') {
+      setShowNameInput(true);
+    }
+  };
+
+  const handleNameSubmit = (e) => {
+    e.preventDefault();
+    if (userName.trim()) {
+      setShowModal(false);
+      setShowNameInput(false);
+      router.push(`/game?name=${encodeURIComponent(userName.trim())}`);
+    } else {
+      // Optional: Add some feedback if the name is empty
+      alert('请输入你的名字！');
+    }
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setShowNameInput(false);
+    setUserName(''); // Reset name input on close
+  };
+
   return (
-    <div className="container mx-auto px-3 md:px-6 pt-4 pb-8 md:py-12 max-w-6xl">
+    <div className="container mx-auto px-3 md:px-6 pt-4 pb-8 md:py-12 max-w-6xl relative">
       {/* Hero Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10 items-center mb-12">
         {/* Left column with text content */}
@@ -35,15 +73,19 @@ export default function HomePage() {
             </div>
 
             <div className="flex justify-center lg:justify-center">
-              <Link href="/game" className="inline-block">
-                <button className="px-8 md:px-10 py-3 md:py-4 bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white rounded-full font-medium text-lg md:text-xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all relative overflow-hidden group">
+              {/* Changed Link to div and added onClick */}
+              <div className="inline-block">
+                <button 
+                  onClick={handleStartChallenge}
+                  className="px-8 md:px-10 py-3 md:py-4 bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white rounded-full font-medium text-lg md:text-xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all relative overflow-hidden group"
+                >
                   <span className="relative z-10 flex items-center justify-center gap-2">
                     <span>开始挑战</span>
                     <span className="text-xl group-hover:translate-x-1 transition-transform">→</span>
                   </span>
                   <span className="absolute inset-0 bg-gradient-to-r from-amber-500 to-rose-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                 </button>
-              </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -114,6 +156,69 @@ export default function HomePage() {
           transform: scale(1.02);
         }
       `}</style>
+
+      {/* Modal */} 
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-md flex justify-center items-center z-50 p-4">
+          <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-6 md:p-8 w-full max-w-md transform transition-all scale-100 opacity-100 relative">
+            <button 
+              onClick={closeModal} 
+              className="absolute top-3 right-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors z-10" // Added z-10
+              aria-label="Close modal"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {!showNameInput ? (
+              <>
+                <h2 className="text-xl md:text-2xl font-semibold mb-6 text-center text-gray-800 dark:text-gray-100">选择挑战身份</h2>
+                <div className="flex flex-col gap-4">
+                  <button 
+                    onClick={() => handleSelectOption('self')}
+                    className="w-full px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium text-base md:text-lg transition-colors shadow hover:shadow-md"
+                  >
+                    用我的名字挑战
+                  </button>
+                  <button 
+                    onClick={() => handleSelectOption('other')}
+                    className="w-full px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100 rounded-lg font-medium text-base md:text-lg transition-colors shadow hover:shadow-md"
+                  >
+                    用其他名字挑战
+                  </button>
+                </div>
+              </>
+            ) : (
+              <form onSubmit={handleNameSubmit}>
+                <h2 className="text-xl md:text-2xl font-semibold mb-6 text-center text-gray-800 dark:text-gray-100">输入你的名字</h2>
+                <input 
+                  type="text"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  placeholder="请输入你的大名"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
+                  required
+                  autoFocus
+                />
+                <button 
+                  type="submit"
+                  className="w-full px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium text-base md:text-lg transition-colors shadow hover:shadow-md"
+                >
+                  确认并开始挑战
+                </button>
+                 <button 
+                    type="button" // Important: type="button" to prevent form submission
+                    onClick={() => setShowNameInput(false)} // Go back to options
+                    className="w-full mt-3 px-6 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+                  >
+                    返回选择
+                  </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

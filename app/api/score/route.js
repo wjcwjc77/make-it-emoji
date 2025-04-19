@@ -2,12 +2,12 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 // 导入本地评分模块，用于获取最佳答案的匹配得分
 import { localScoring } from '../../utils/integrated_scoring';
-
+console.log("process.env.DEEPSEEK_API_KEY:", process.env.DEEPSEEK_API_KEY);
 const openai = new OpenAI({
-     apiKey: process.env.OPENAI_API_KEY,
-     baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+     apiKey: process.env.DEEPSEEK_API_KEY,
+     baseURL: "https://api.deepseek.com",
 });
-
+import enhancedChengyu from '../../../data/enhanced_chengyu.json';
 export async function POST(req) {
   const requestId = Date.now().toString(36); // 生成一个请求ID用于追踪
   console.log(`=== 开始处理请求 ${requestId} ===`);
@@ -35,22 +35,60 @@ export async function POST(req) {
     // 获取本地匹配得分 (100%)
     console.log(`[${requestId}] Getting local matching score for:`, phrase);
     let localResult = null;
-    try {
-      localResult = localScoring(emojis, phrase);
-      console.log(`[${requestId}] localScoring返回值:`, localResult);
-    } catch (err) {
-      console.error(`[${requestId}] 本地评分出错:`, err);
-      localResult = null;
+    if (enhancedChengyu.hasOwnProperty(phrase)) {
+      try {
+        localResult = localScoring(emojis, phrase);
+        console.log(`[${requestId}] localScoring返回值:`, localResult);
+      } catch (err) {
+        console.error(`[${requestId}] 本地评分出错:`, err);
+        const randomScore = Math.floor(Math.random() * 7) * 5 + 70;
+        localResult = {
+          score: randomScore,
+          suggestedEmojis: emojis.join(' '),
+          comparison: '',
+          reason: ''
+        };
+      }
+    }else{
+      const randomScore = Math.floor(Math.random() * 7) * 5 + 70;
+      localResult = {
+        score: randomScore,
+        suggestedEmojis: emojis.join(' '),
+        comparison: '',
+        reason: ''
+      };
     }
+
     
     let finalScore = 0;
-    let localSuggestedEmojis = emojis.join(' ');
+
+    if (!enhancedChengyu.hasOwnProperty(phrase)) {
+      console.log(phrase,"1111111")
+      try {
+        const createUrl = `${process.env.NEXTAUTH_URL}/api/create`;
+        console.log(`[${requestId}] 创建请求URL:`, createUrl);
+        const res = await fetch(createUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            phrase: phrase
+          })
+        });
+        
+        const data = await res.json();
+        localResult.suggestedEmojis = data.emojis.join(' ');
+        localResult.reason = data.reason;
+        console.log(localResult.suggestedEmojis,"localResult.suggestedEmojis");
+      } catch (error) {
+        console.error('请求 /api/create 时出错:', error);
+      }
+    }
+    let response_emojis = localResult.suggestedEmojis;
+    let reason = localResult.reason;
     
-    // 如果有本地评分结果，提取分数和建议的表情
     if (localResult && typeof localResult.score === 'number') {
       console.log(`[${requestId}] Local score available:`, localResult.score);
       finalScore = localResult.score;
-      localSuggestedEmojis = localResult.suggestedEmojis || emojis.join(' ');
     } else {
       console.log(`[${requestId}] No local score available, using default value`);
       // 如果没有本地评分，默认给予一个中等分数
@@ -87,7 +125,7 @@ export async function POST(req) {
     let feedbackResponse;
     try {
       feedbackResponse = await openai.chat.completions.create({
-        model: 'qwen-turbo',
+        model: 'deepseek-chat',
         messages: [
           { role: 'system', content: 'You are a helpful assistant that evaluates emoji expressions.' },
           { role: 'user', content: feedbackPrompt }
@@ -155,8 +193,9 @@ export async function POST(req) {
     // 构建响应对象 - 移除维度分数，只保留总分和评价
     const responseData = { 
       score: finalScore,
-      suggestedEmojis: localSuggestedEmojis,
-      comparison
+      suggestedEmojis: response_emojis,
+      comparison,
+      aiAnswerReason: reason
     };
     
     // 记录最终结果
