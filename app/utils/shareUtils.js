@@ -26,7 +26,7 @@ export const generateQRCode = async (url) => {
 /**
  * 生成分享文本内容
  * @param {Object} params 分享参数
- * @param {string} params.phrase 成语
+ * @param {string} params.phrase 名字
  * @param {number} params.score 分数
  * @param {Array<string>} params.emojis 用户选择的表情
  * @param {string} params.suggestedEmojis AI推荐的表情
@@ -34,7 +34,7 @@ export const generateQRCode = async (url) => {
  * @returns {string} 格式化的分享文本
  */
 export const generateShareText = ({ phrase, score, emojis, suggestedEmojis, scoreLevel }) => {
-  return `我在emoji-master.com中表达"${phrase}"，获得了${score}分！\n成功晋级【${scoreLevel.level}】🎉\n我的表达：${emojis.join(" ")}\nAI的表达：${suggestedEmojis}\n\n有本事你也来挑战一下？👉 emoji-master.com #成语挑战`;
+  return `我在make-it-emoji.tech中表达"${phrase}"，获得了${score}分！\n成功晋级【${scoreLevel.level}】🎉\n我的表达：${emojis.join(" ")}\nAI的表达：${suggestedEmojis}\n\n有本事你也来挑战一下？👉 make-it-emoji.tech #名字挑战`;
 };
 
 /**
@@ -46,7 +46,7 @@ export const shareTextContent = async (shareText) => {
   if (navigator.share) {
     try {
       await navigator.share({
-        title: '🎮 emoji-master.com挑战结果',
+        title: '🎮 make-it-emoji.tech挑战结果',
         text: shareText,
       });
     } catch (error) {
@@ -76,7 +76,7 @@ const fallbackCopyToClipboard = (text) => {
 /**
  * 复制挑战链接
  * @param {Object} params 链接参数
- * @param {string} params.phrase 成语
+ * @param {string} params.phrase 名字
  * @param {number} params.score 分数
  * @returns {string} 生成的挑战链接
  */

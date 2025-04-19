@@ -17,7 +17,7 @@ export async function POST(req) {
     // 基本参数验证 - 只需要验证phrase
     if (!phrase) {
       console.error(`[${requestId}] 请求参数无效:`, { phrase });
-      return NextResponse.json({ error: "无效的成语参数" }, { status: 400 });
+      return NextResponse.json({ error: "无效的名字参数" }, { status: 400 });
     }
     
     

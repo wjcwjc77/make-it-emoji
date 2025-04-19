@@ -1,7 +1,7 @@
 /**
  * 生成分享图片 - SVG版本
  * @param {Object} params 分享图片所需参数
- * @param {string} params.phrase 成语
+ * @param {string} params.phrase 名字
  * @param {number} params.score 分数
  * @param {Array<string>} params.emojis 用户选择的表情
  * @param {string} params.suggestedEmojis AI推荐的表情
@@ -78,17 +78,17 @@ export const generateShareImage = async ({
     };
   })();
   
-  // 成语区域
+  // 名字区域
   const idiomSection = (() => {
     const startY = dynamicHeight;
     const boxHeight = 110; // 增加高度，提供更好的视觉空间
     const boxWidth = width - padding.outer * 2;
     
-    // 成语显示区域
+    // 名字显示区域
     const phraseBoxWidth = 360;
-    const phraseBoxHeight = 50; // 增加高度，让成语更加突出
+    const phraseBoxHeight = 50; // 增加高度，让名字更加突出
     
-    // 计算成语文本宽度 - 新增函数
+    // 计算名字文本宽度 - 新增函数
     const getPhraseWidth = (text) => {
       let width = 0;
       for (const char of text) {
@@ -99,7 +99,7 @@ export const generateShareImage = async ({
       return width;
     };
     
-    // 计算成语宽度
+    // 计算名字宽度
     const phraseWidth = getPhraseWidth(phrase);
     // 添加少量内边距
     const textMargin = 15;
@@ -284,18 +284,18 @@ export const generateShareImage = async ({
               text-anchor="middle" dominant-baseline="central">${titleSection.level} ${titleSection.emojis || '🔍'}</text>
       </g>
       
-      <!-- 成语展示区域 -->
+      <!-- 名字展示区域 -->
       <g>
         <rect x="${idiomSection.boxX}" y="${idiomSection.boxY}" width="${idiomSection.boxWidth}" height="${idiomSection.boxHeight}" rx="16" ry="16" fill="white" filter="url(#shadow)" />
         
         <!-- 顶部装饰元素 -->
         <rect x="${idiomSection.boxX}" y="${idiomSection.boxY}" width="${idiomSection.boxWidth}" height="4" rx="2" ry="2" fill="url(#phraseGradient)" />
         
-        <!-- 成语表达提示 -->
+        <!-- 名字表达提示 -->
         <text x="${width / 2}" y="${idiomSection.titleY}" font-family="Arial" font-weight="bold" font-size="20" fill="#4B5563" 
-              text-anchor="middle" dominant-baseline="middle">用表情表达成语</text>
+              text-anchor="middle" dominant-baseline="middle">用表情表达名字</text>
         
-        <!-- 成语展示 - 现代风格 -->
+        <!-- 名字展示 - 现代风格 -->
         <rect x="${idiomSection.phraseBoxX}" y="${idiomSection.phraseBoxY}" width="${idiomSection.phraseBoxWidth}" height="${idiomSection.phraseBoxHeight}" rx="12" ry="12" fill="#F3F4F6" />
         <text x="${width / 2}" y="${idiomSection.phraseTextY}" font-family="Arial" font-weight="bold" font-size="26" fill="#111827" 
               text-anchor="middle" dominant-baseline="central">${phrase}</text>
@@ -403,7 +403,7 @@ export const generateShareImage = async ({
               
         <!-- 站点名称 -->
         <text x="${width / 2}" y="${qrSection.footerY}" font-family="Arial" font-size="16" fill="#6b7280" 
-              text-anchor="middle" dominant-baseline="middle">emoji-master.com · 成语表情挑战</text>
+              text-anchor="middle" dominant-baseline="middle">make-it-emoji.tech · 名字表情挑战</text>
       </g>`;
   
   // 结束SVG
@@ -558,7 +558,7 @@ const convertSvgToPng = async (svgBlob, width, height) => {
  * 下载或分享图片
  * @param {Blob} svgBlob 图片SVG blob对象
  * @param {Object} options 选项
- * @param {string} options.phrase 成语
+ * @param {string} options.phrase 名字
  * @param {number} options.score 分数
  * @param {boolean} options.isMobile 是否移动设备
  * @returns {Promise<void>}
@@ -598,8 +598,8 @@ export const handleImageOutput = async (svgBlob, { phrase, score, isMobile }) =>
               files: [new File([pngBlob], `emoji-${phrase}-${score}分.png`, { type: 'image/png' })] 
             })) {
           await navigator.share({
-            title: '我的成语表情挑战结果',
-            text: `我在emoji-master.com中表达"${phrase}"，获得了${score}分！快来挑战我的高分吧！`,
+            title: '我的名字表情挑战结果',
+            text: `我在make-it-emoji.tech中表达"${phrase}"，获得了${score}分！快来挑战我的高分吧！`,
             files: [new File([pngBlob], `emoji-${phrase}-${score}分.png`, { type: 'image/png' })],
           });
         } else {

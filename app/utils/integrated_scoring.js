@@ -1,9 +1,9 @@
 /**
- * 成语表情游戏本地评分模块
+ * 名字表情游戏本地评分模块
  * 使用预计算的标准答案进行评分，减少对大模型API的依赖
  */
 
-// 加载预计算的成语表情数据
+// 加载预计算的名字表情数据
 import enhancedChengyu from '../../data/enhanced_chengyu.json';
 
 /**
@@ -38,7 +38,7 @@ export function calculateSimilarity(userEmojis, standardEmojis) {
  * @param {Array<string>} userEmojis 用户选择的表情
  * @param {string} standardEmojis 标准答案表情
  * @param {number} similarity 相似度
- * @param {string} phrase 成语
+ * @param {string} phrase 名字
  * @returns {string} 评语
  */
 export function generateComparison(userEmojis, standardEmojis, similarity, phrase) {
@@ -54,7 +54,7 @@ export function generateComparison(userEmojis, standardEmojis, similarity, phras
   } else if (similarity >= 0.3) {
     comment = `尝试不错，但你的表情选择与"${phrase}"的本意有些距离。再想想？`;
   } else {
-    comment = `看起来你的表情选择与"${phrase}"的含义有较大差异。查看我的建议，了解这个成语如何用表情表达。`;
+    comment = `看起来你的表情选择与"${phrase}"的含义有较大差异。查看我的建议，了解这个名字如何用表情表达。`;
   }
   
   // 添加表情建议
@@ -66,7 +66,7 @@ export function generateComparison(userEmojis, standardEmojis, similarity, phras
 /**
  * 本地评分函数
  * @param {Array<string>} userEmojis 用户选择的表情
- * @param {string} phrase 成语
+ * @param {string} phrase 名字
  * @returns {Object|null} 评分结果或null(如果没有预计算数据)
  */
 export function localScoring(userEmojis, phrase) {

@@ -50,11 +50,11 @@ export default function HomePage() {
         <div className="card w-full p-5 md:p-8 text-center lg:text-center fade-in order-2 lg:order-1 bg-white/90 dark:bg-gray-800/80 shadow-xl backdrop-blur-md rounded-2xl border border-indigo-100 dark:border-indigo-800/30">
           <div className="max-w-md mx-auto">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500 text-center">
-              emoji-master
+             make-it-emoji
             </h1>
             
             <p className="text-base md:text-lg mb-6 md:mb-8 text-gray-700 dark:text-gray-300 text-center">
-              用Emoji表达中国成语，挑战你的创意思维！
+              用Emoji表达名字，挑战你的创意思维！
             </p>
             
             <div className="flex flex-row gap-3 md:gap-8 justify-center w-full mb-6 md:mb-10">
@@ -77,13 +77,12 @@ export default function HomePage() {
               <div className="inline-block">
                 <button 
                   onClick={handleStartChallenge}
-                  className="px-8 md:px-10 py-3 md:py-4 bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white rounded-full font-medium text-lg md:text-xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all relative overflow-hidden group"
+                  className="px-8 md:px-10 py-3 md:py-4 bg-blue-500 hover:bg-blue-600 text-white rounded-full font-medium text-lg md:text-xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all group"
                 >
-                  <span className="relative z-10 flex items-center justify-center gap-2">
+                  <span className="flex items-center justify-center gap-2">
                     <span>开始挑战</span>
                     <span className="text-xl group-hover:translate-x-1 transition-transform">→</span>
                   </span>
-                  <span className="absolute inset-0 bg-gradient-to-r from-amber-500 to-rose-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                 </button>
               </div>
             </div>
@@ -124,12 +123,11 @@ export default function HomePage() {
             
             {/* Example display */}
             <div className="absolute bottom-4 md:bottom-6 left-4 md:left-6 right-4 md:right-6 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md p-4 md:p-5 rounded-xl shadow-xl transform hover:scale-102 transition-transform">
-              <p className="text-sm md:text-base text-center font-medium mb-2 text-gray-700 dark:text-gray-300">「守株待兔」</p>
+              <p className="text-sm md:text-base text-center font-medium mb-2 text-gray-700 dark:text-gray-300">「特朗普」</p>
               <div className="flex justify-center gap-3 md:gap-4">
-                <span className="text-2xl md:text-3xl pulse-gentle" style={{ animationDelay: "0.1s" }}>🌳</span>
-                <span className="text-2xl md:text-3xl pulse-gentle" style={{ animationDelay: "0.3s" }}>👀</span>
-                <span className="text-2xl md:text-3xl pulse-gentle" style={{ animationDelay: "0.5s" }}>⏳</span>
-                <span className="text-2xl md:text-3xl pulse-gentle" style={{ animationDelay: "0.7s" }}>🐰</span>
+                <span className="text-2xl md:text-3xl pulse-gentle" style={{ animationDelay: "0.1s" }}>👊</span>
+                <span className="text-2xl md:text-3xl pulse-gentle" style={{ animationDelay: "0.3s" }}>🇺🇸</span>
+                <span className="text-2xl md:text-3xl pulse-gentle" style={{ animationDelay: "0.5s" }}>🔥</span>
               </div>
             </div>
           </div>
@@ -159,7 +157,7 @@ export default function HomePage() {
 
       {/* Modal */} 
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-md flex justify-center items-center z-50 p-4">
+        <div className="fixed inset-0 bg-white bg-opacity-75 backdrop-blur-md flex justify-center items-center z-50 p-4">
           <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-6 md:p-8 w-full max-w-md transform transition-all scale-100 opacity-100 relative">
             <button 
               onClick={closeModal} 
@@ -203,7 +201,7 @@ export default function HomePage() {
                 />
                 <button 
                   type="submit"
-                  className="w-full px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium text-base md:text-lg transition-colors shadow hover:shadow-md"
+                  className="w-full px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium text-base md:text-lg transition-colors shadow hover:shadow-md"
                 >
                   确认并开始挑战
                 </button>

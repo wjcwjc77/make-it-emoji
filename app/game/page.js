@@ -1,6 +1,6 @@
 "use client";
 // import emojiData from "../../data/chengyu_emoji.json";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Confetti } from "../components/Confetti";
 import chengyuData from '../../data/enhanced_chengyu.json';
@@ -74,13 +74,13 @@ function adjustEmojiCount(emojis, cols) {
   return [...emojis, ...extraEmojis];
 }
 
-// 从emojiData加载该成语的特定emoji候选，如果不存在则从通用池中添加
+// 从emojiData加载该名字的特定emoji候选，如果不存在则从通用池中添加
 function loadEmojisForPhrase(phrase) {
   // 修改为使用enhanced_chengyu.json中的candidates
   if (chengyuData[phrase] && chengyuData[phrase].candidates) {
     const uniqueEmojis = removeDuplicates(chengyuData[phrase].candidates);
     
-    // 获取成语的表达需要的最佳emoji数量 (3-5个)
+    // 获取名字的表达需要的最佳emoji数量 (3-5个)
     const idealCount = Math.min(5, uniqueEmojis.length);
     const primaryEmojis = uniqueEmojis.slice(0, idealCount);
     
@@ -95,7 +95,7 @@ function loadEmojisForPhrase(phrase) {
     // 随机排序
     return [...combinedEmojis].sort(() => Math.random() - 0.5);
   } else {
-    // 如果没有该成语的预设emoji，使用通用pool
+    // 如果没有该名字的预设emoji，使用通用pool
     console.log(`No preset emojis for phrase: ${phrase}, using common pool`);
     const randomCount = Math.floor(Math.random() * 3) + 10; // 随机10-12个
     return getRandomEmojis([], randomCount);
@@ -109,7 +109,7 @@ function LoadingAnimation() {
       {/* 水墨背景纹理 */}
       <div className="absolute inset-0 opacity-10 dark:opacity-15" 
            style={{
-             backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'100\' height=\'100\' viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z\' fill=\'%23065f46\' fill-opacity=\'0.3\' fill-rule=\'evenodd\'/%3E%3C/svg%3E")',
+             backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'100\' height=\'100\' viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5-5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5-5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5-5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5-5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z\' fill=\'%23065f46\' fill-opacity=\'0.3\' fill-rule=\'evenodd\'/%3E%3C/svg%3E")',
              backgroundSize: '160px 160px'
            }}></div>
 
@@ -199,6 +199,7 @@ function GameContent() {
   const [columnCount, setColumnCount] = useState(4); // 默认为移动设备的4列
   const [showChallengeTooltip, setShowChallengeTooltip] = useState(false);
   const [showExplanation, setShowExplanation] = useState(false);
+  const isInitialLoad = useRef(true); // Add ref to track initial load
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -221,47 +222,71 @@ function GameContent() {
   }, []);
 
   useEffect(() => {
-    const loadGame = () => {
-      // 检查是否有朋友的挑战链接参数
-      const name = searchParams.get("name");
-      if (name) {
-        setUserName(name);
-      }
-      const sharedPhrase = searchParams.get("phrase");
-      const score = searchParams.get("score");
-
-      let selectedPhrase;
-      if (sharedPhrase && chengyuData[sharedPhrase]) {
-        selectedPhrase = sharedPhrase;
-        if (score) {
-          setFriendScore(score);
+    // Only run the load logic on the initial mount or when dependencies truly necessitate a reload
+    // The ref prevents multiple calls during the initial render phase
+    if (isInitialLoad.current) {
+      const loadGame = () => {
+        console.log("Running loadGame..."); // Add log to track calls
+        // 检查是否有朋友的挑战链接参数
+        const name = searchParams.get("name");
+        console.log("name:", name);
+        if (name) {
+          setUserName(name);
         }
-      } else {
-        // 随机选择成语
-        const phrases = Object.keys(chengyuData);
-        selectedPhrase = phrases[Math.floor(Math.random() * phrases.length)];
-      }
+        const sharedPhrase = searchParams.get("phrase");
+        const score = searchParams.get("score");
 
-      setPhrase(name || selectedPhrase);
+        let selectedPhrase;
+        if (sharedPhrase && chengyuData[sharedPhrase]) {
+          console.log("Friend's challenge link detected.");
+          selectedPhrase = sharedPhrase;
+          if (score) {
+            setFriendScore(score);
+          }
+        } else {
+          // 随机选择名字
+          const phrases = Object.keys(chengyuData);
+          selectedPhrase = phrases[Math.floor(Math.random() * phrases.length)];
+        }
 
-      // 加载并准备emoji池
-      const phraseEmojis = loadEmojisForPhrase(selectedPhrase);
+        console.log("selectedPhrase:", selectedPhrase);
+
+        setPhrase(name || selectedPhrase);
+
+        // 加载并准备emoji池
+        const phraseEmojis = loadEmojisForPhrase(selectedPhrase);
+        
+        // 调整emoji列表长度为网格列数的倍数，保证布局整齐
+        // Pass columnCount directly here if needed, or ensure it's stable before this runs
+        const adjustedEmojis = adjustEmojiCount(phraseEmojis, columnCount);
+
+        setEmojis(adjustedEmojis);
+
+        // 保存原始的uniqueEmojis用于传递给评分API
+        // 使用已加载的emoji池作为availableEmojis，确保所有展示的emoji都可选
+        localStorage.setItem("originalEmojiPool", JSON.stringify(adjustedEmojis));
+
+        setIsLoading(false);
+        isInitialLoad.current = false; // Mark initial load as complete
+      };
+
+      // 添加短暂延迟以显示加载效果
+      const timerId = setTimeout(loadGame, 800);
       
-      // 调整emoji列表长度为网格列数的倍数，保证布局整齐
-      const adjustedEmojis = adjustEmojiCount(phraseEmojis, columnCount);
-
-      setEmojis(adjustedEmojis);
-
-      // 保存原始的uniqueEmojis用于传递给评分API
-      // 使用已加载的emoji池作为availableEmojis，确保所有展示的emoji都可选
-      localStorage.setItem("originalEmojiPool", JSON.stringify(adjustedEmojis));
-
-      setIsLoading(false);
-    };
-
-    // 添加短暂延迟以显示加载效果
-    setTimeout(loadGame, 800);
-  }, [searchParams, columnCount]);
+      // Cleanup function to clear timeout if dependencies change before it fires
+      return () => clearTimeout(timerId);
+    } else {
+      // Handle subsequent updates if necessary, e.g., if columnCount changes significantly
+      // For now, we only focus on preventing multiple initial loads.
+      // You might need to re-adjust emojis if columnCount changes after initial load:
+      console.log("Dependency changed after initial load (columnCount or searchParams), re-adjusting emojis...");
+      const adjustedEmojis = adjustEmojiCount(emojis, columnCount); // Adjust existing emojis
+      if (adjustedEmojis.length !== emojis.length) { // Only update if length changes
+          setEmojis(adjustedEmojis);
+          localStorage.setItem("originalEmojiPool", JSON.stringify(adjustedEmojis));
+      }
+    }
+  }, [searchParams, columnCount, emojis]); // Add emojis to dependency array if re-adjustment is needed
 
   const handleSelect = (emoji) => {
     console.log("handleSelect called with emoji:", emoji);
@@ -364,28 +389,28 @@ function GameContent() {
         {/* 山水画风格的背景纹理 */}
         <div className="absolute inset-0 opacity-5 dark:opacity-10" 
              style={{
-               backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'100\' height=\'100\' viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z\' fill=\'%23134e4a\' fill-opacity=\'0.2\' fill-rule=\'evenodd\'/%3E%3C/svg%3E")',
+               backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'100\' height=\'100\' viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z\' fill=\'%23065f46\' fill-opacity=\'0.3\' fill-rule=\'evenodd\'/%3E%3C/svg%3E")',
                backgroundSize: '160px 160px'
              }}></div>
-        
+
         <h2 className="text-4xl font-semibold text-center mb-6 text-green-600 dark:text-green-400 tracking-widest relative z-10">
           用Emoji表达：
         </h2>
         <div className="text-5xl font-bold text-center p-6 md:p-8 bg-gradient-to-r from-green-500 via-teal-500 to-blue-500 text-white rounded-xl shadow-xl transform transition-all hover:scale-105 duration-500 relative z-10">
           <span className="block tracking-wide">{phrase}</span>
-          <button 
+          {/* <button 
             className="mt-4 px-3 py-1.5 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white rounded-lg text-sm font-medium flex items-center mx-auto gap-1.5 transition-all"
             onClick={() => setShowExplanation(!showExplanation)}
-            aria-label="显示或隐藏成语解释"
+            aria-label="显示或隐藏名字解释"
           >
             <span className="text-xs">查看解释</span>
             <span className="text-lg">{showExplanation ? '👁️' : '❓'}</span>
-          </button>
+          </button> */}
         </div>
         
         <div className={`bg-green-50 dark:bg-green-900/20 p-4 rounded-lg mt-4 mb-4 border border-green-100 dark:border-green-800/30 text-center relative z-10 text-gray-700 dark:text-gray-300 leading-relaxed transition-all overflow-hidden ${showExplanation ? 'max-h-32 opacity-100 fade-in' : 'max-h-0 opacity-0 fade-out p-0 border-0 mb-0 mt-0 hidden'}`}>
           <p className="font-medium text-base md:text-lg">
-            {chengyuData[phrase]?.explanation || `「${phrase}」是一个中国成语，请尝试用表情符号来表达它的含义。`}
+            {chengyuData[phrase]?.explanation || `「${phrase}」是一个中国名字，请尝试用表情符号来表达它的含义。`}
           </p>
         </div>
       
@@ -419,7 +444,7 @@ function GameContent() {
             </div>
           ) : (
             <p className="text-gray-500 dark:text-gray-400 text-2xl md:text-3xl leading-relaxed">
-              请从下方挑选 1-5 个表情，巧妙表达这个成语含义
+              请从下方挑选 1-5 个表情，巧妙表达这个名字含义
             </p>
           )}
         </div>
@@ -455,7 +480,7 @@ function GameContent() {
         {/* 山水画风格的背景纹理 - 更细微的版本 */}
         <div className="absolute inset-0 opacity-3 dark:opacity-8" 
              style={{
-               backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23065f46\' fill-opacity=\'0.1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+               backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23065f46\' fill-opacity=\'0.1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
                backgroundSize: '120px 120px'
              }}></div>
          

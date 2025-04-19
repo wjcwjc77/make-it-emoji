@@ -5,10 +5,10 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 function HeaderTitle({ pathname }) {
-  let title = "成语表情包挑战";
+  let title = "名字表情包挑战";
   
   if (pathname === "/game") {
-    title = "猜成语";
+    title = "名字—>Emoji";
   } else if (pathname === "/result") {
     title = "挑战结果";
   }
@@ -30,8 +30,8 @@ export default function ClientHeader() {
         {/* Logo and name - aligned left on all screen sizes */}
         <div className="flex items-center mr-4">
           <Link href="/" className="text-lg sm:text-xl font-bold flex items-center gap-1 sm:gap-2">
-            <Image src="/favicon.ico" alt="emoji-master.com" width={32} height={32} className="w-6 h-6 sm:w-7 sm:h-7" />
-            <span className="truncate hidden sm:inline">emoji-master.com</span>
+            <Image src="/favicon.ico" alt="make-it-emoji.tech" width={32} height={32} className="w-6 h-6 sm:w-7 sm:h-7" />
+            <span className="truncate hidden sm:inline">make-it-emoji.tech</span>
             <span className="truncate sm:hidden">emoji</span>
           </Link>
         </div>

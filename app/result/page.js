@@ -328,11 +328,11 @@ function ResultContent() {
       )}
 
       <div className="mb-2 sm:mb-6">
-        {/* 成语显示 - 更紧凑的移动设计 */}
+        {/* 名字显示 - 更紧凑的移动设计 */}
         <div className="card p-3 sm:p-6 mb-3 sm:mb-6 fade-in-once border-t-4 border-primary shadow-md">
           <h2 className="text-base sm:text-xl font-medium mb-2 sm:mb-4 flex items-center gap-1">
             <span className="w-5 h-5 sm:w-8 sm:h-8 flex items-center justify-center bg-primary/10 rounded-full text-primary">📝</span>
-            成语：
+            名字：
           </h2>
           <div className="text-xl sm:text-4xl font-bold p-2 sm:p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-900/50 rounded-lg text-center">
             {phrase}

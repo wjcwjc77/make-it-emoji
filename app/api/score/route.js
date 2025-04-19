@@ -105,9 +105,9 @@ export async function POST(req) {
     
     // 创建评价prompt
     console.log(`[${requestId}] Creating feedback prompt...`);
-    const feedbackPrompt = `作为一位Emoji表达评价专家，请为玩家的成语表达提供积极的反馈：
+    const feedbackPrompt = `作为一位Emoji表达评价专家，请为玩家的名字表达提供积极的反馈：
 
-成语：「${phrase}」
+名字：「${phrase}」
 玩家使用的表情：${emojis.join(" ")}
 
 请提供一段积极且鼓励性的评价，突出表达的创意性、巧妙度和表达力。请勿提供具体分数。
@@ -139,7 +139,7 @@ export async function POST(req) {
       feedbackResponse = {
         choices: [{
           message: {
-            content: `太棒了！你对「${phrase}」的表情表达非常有创意！你选择的表情组合巧妙地捕捉到了成语的精髓，展现了独特的思考方式。这种新颖的表达方式让人眼前一亮！`
+            content: `太棒了！你对「${phrase}」的表情表达非常有创意！你选择的表情组合巧妙地捕捉到了名字的精髓，展现了独特的思考方式。这种新颖的表达方式让人眼前一亮！`
           }
         }]
       };
