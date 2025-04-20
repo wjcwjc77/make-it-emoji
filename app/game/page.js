@@ -4,8 +4,8 @@ import { useState, useEffect, Suspense, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Confetti } from "../components/Confetti";
 import chengyuData from '../../data/enhanced_chengyu.json';
-import EmojiPicker from 'emoji-picker-react';
-
+import  EmojiPicker from 'emoji-picker-react';
+import { EmojiStyle } from 'emoji-picker-react';  
 function App() {
   return (
     <div>
@@ -511,6 +511,7 @@ function GameContent() {
         </div> */}
         <div>
           <EmojiPicker   width="100%" searchDisabled={true}
+          emojiStyle={EmojiStyle.NATIVE}
             onEmojiClick={(emojiData, event) => {
               if (selected.length < 5) {
                 console.log('Emoji selected:', emojiData.emoji);

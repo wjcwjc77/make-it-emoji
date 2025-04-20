@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 // 导入本地评分模块，用于获取最佳答案的匹配得分
 import { localScoring } from '../../utils/integrated_scoring';
-console.log("process.env.DEEPSEEK_API_KEY:", process.env.DEEPSEEK_API_KEY);
 const openai = new OpenAI({
      apiKey: process.env.DEEPSEEK_API_KEY,
      baseURL: "https://api.deepseek.com",
