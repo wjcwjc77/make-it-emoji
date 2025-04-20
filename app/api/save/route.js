@@ -53,13 +53,13 @@ export async function POST(req) {
     supabase.from("emoji_annotations").insert(playerData)
       .then(({ error }) => {
         if (error) {
-          console.error("Supabase error:", error);
+          console.log("Supabase error:", error);
         } else {
           console.log("Data saved successfully");
         }
       })
       .catch(error => {
-        console.error("Database operation failed:", error);
+        console.log("Database operation failed:", error);
       });
     
     // 立即返回成功响应
@@ -68,7 +68,7 @@ export async function POST(req) {
       ip: clientIP 
     });
   } catch (error) {
-    console.error("API error:", error);
+    console.log("API error:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 } 
