@@ -79,8 +79,8 @@ export function localScoring(userEmojis, phrase) {
   
   const standardData = enhancedChengyu[phrase];
   const similarity = calculateSimilarity(userEmojis, standardData.bestAnswer);
-const score = Math.max(Math.round(similarity * 100), 70);
-  // 如果是用户自己输入的name，那么就让模型来生成一个；如果用户选择的是别人的name，那就直接使用enhancedChengyu
+  const randomScore = Math.floor(Math.random() * 7) * 5 + 70;
+  const score = Math.max(Math.round(similarity * 100), randomScore);
   
   return {
     score,
