@@ -10,7 +10,7 @@ export async function POST(req) {
     let clientIP = "unknown";
     
     // 注意: 在 Next.js 中，headers() 需要直接在路由处理器中使用
-    const headersList = headers();
+    const headersList = await headers();
     
     // 尝试从前端传递的 IP 获取
     if (data.player_ip && data.player_ip !== 'fetch-failed' && data.player_ip !== 'unknown') {
@@ -50,7 +50,7 @@ export async function POST(req) {
     
     // 即发即忘模式: 立即返回响应，同时在后台处理数据库操作
     // 不使用await，让数据库操作在后台进行
-    supabase.from("emoji_annotations").insert(playerData)
+    await supabase.from("emoji_annotations").insert(playerData)
       .then(({ error }) => {
         if (error) {
           console.log("Supabase error:", error);
@@ -71,4 +71,4 @@ export async function POST(req) {
     console.log("API error:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
-} 
+}

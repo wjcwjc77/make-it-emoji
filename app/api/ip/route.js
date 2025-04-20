@@ -6,7 +6,7 @@ export async function GET() {
   
   try {
     // 获取请求头
-    const headersList = headers();
+    const headersList = await headers();
     
     // 正确使用 headersList
     const forwardedFor = headersList.get('x-forwarded-for') || '';
@@ -34,4 +34,4 @@ export async function GET() {
   }
   
   return NextResponse.json({ ip });
-} 
+}
