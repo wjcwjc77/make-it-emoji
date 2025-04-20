@@ -65,7 +65,6 @@ export async function POST(req) {
       console.log(phrase,"1111111")
       try {
         const createUrl = `${process.env.NEXTAUTH_URL}/api/create`;
-        console.log(`[${requestId}] 创建请求URL:`, createUrl);
         const res = await fetch(createUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },

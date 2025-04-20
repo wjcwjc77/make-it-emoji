@@ -309,7 +309,7 @@ function ResultContent() {
     <div className="container mx-auto px-2 sm:px-4 pt-1 pb-4 sm:py-4 max-w-4xl">
       {showConfetti && <Confetti />}
 
-      {showShareTip && (
+      {/* {showShareTip && (
         <div className="fixed bottom-16 right-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white p-3 rounded-lg shadow-lg animate-float z-50 max-w-xs">
           <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white font-bold cursor-pointer"
             onClick={() => setShowShareTip(false)}>
@@ -325,7 +325,7 @@ function ResultContent() {
             </button>
           </div>
         </div>
-      )}
+      )} */}
 
       <div className="mb-2 sm:mb-6">
         {/* 名字显示 - 更紧凑的移动设计 */}
