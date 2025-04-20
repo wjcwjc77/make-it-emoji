@@ -291,7 +291,8 @@ function GameContent() {
   const handleSelect = (emoji) => {
     console.log("handleSelect called with emoji:", emoji);
     if (selected.length < 5) {
-      setSelected([...selected, emoji]);
+      console.log("Emoji selected:", selected);
+      setSelected(prev => [...prev, emoji]);
 
       // 触发五彩纸屑效果
       setShowConfetti(false); 
@@ -312,11 +313,16 @@ function GameContent() {
 
   // 撤销最后一个Emoji
   const handleUndo = () => {
-    setSelected(selected.slice(0, -1));
+    setSelected(prev => {
+      const newSelected = prev.slice(0, -1);
+      console.log("撤销后selected:", newSelected);
+      return newSelected;
+    });
   };
 
   // 清空所有Emoji选择
   const handleClear = () => {
+    console.log("清空所有选择");
     setSelected([]);
   };
 
@@ -514,7 +520,6 @@ function GameContent() {
           emojiStyle={EmojiStyle.NATIVE}
             onEmojiClick={(emojiData, event) => {
               if (selected.length < 5) {
-                console.log('Emoji selected:', emojiData.emoji);
                 handleSelect(emojiData.emoji);
               }
             }}
