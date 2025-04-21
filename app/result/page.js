@@ -372,7 +372,7 @@ function ResultContent() {
             >
               <h2 className="text-base sm:text-xl font-medium mb-2 sm:mb-4 flex items-center gap-1">
                 <span className="w-5 h-5 sm:w-8 sm:h-8 flex items-center justify-center bg-blue-500/10 rounded-full text-blue-500">🤖</span>
-                AI的答案：
+                AI的答案（点击查看原因）：
               </h2>
               <div className="text-xl sm:text-4xl mb-1 sm:mb-4 flex flex-wrap justify-center gap-1 p-2 sm:p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/10 dark:to-cyan-900/10 rounded-lg min-h-[50px] sm:h-[96px] overflow-auto">
                 {suggestedEmojis.split(' ').map((emoji, index) => (
